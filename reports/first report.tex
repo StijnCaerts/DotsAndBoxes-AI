@@ -1,0 +1,54 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{fullpage}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\author{Wouter Baert \& Stijn Caerts}
+\title{Machine Learning: Project \\ \small{First report}}
+
+\begin{document}
+	\maketitle
+	\section{Literature}
+	\section{Pipeline}
+	Summary of strategy in paper. We aim to test other strategies as well, but this is the main pipeline we want to study first.
+	State representation: use game specific knowledge of chains
+	Learning: ANN
+		input: board state, use minimax search to find score with an optimal strategy for both players
+		output: "outputs values between -1 and 1 where 1 means that
+		the current player will most certainly win and -1 means that
+		the player will surely lose."
+	Playing strategy: MCTS
+		use of ANN in simulation step
+	\section{Research questions}
+	\subsection{Which strategy for game playing do you use?}
+	Reading of research papers, implement different strategies and compare results
+	\subsection{Which data representation do you use?}
+	Board representation of chains, such that not the whole board should be scanned before each move
+	\subsection{Which machine learning model(s) do you use to represent the game state?}
+	same as previous question?
+	\subsection{How will you evaluate your solution?}
+	comparison of our implementation(s) with other implementations than our own
+	
+	\subsection{What is the computational and memory cost of preprocessing, learning and evaluating?}
+	Analysis of experimental results for different problem sizes.
+	
+	\subsection{How do you force a decision within a given time limit?}
+	Restrict number of simulations in MCTS
+	
+	\subsection{Can you represent and learn to recognize the concept of chains, a popular strategy in Dots-and-Boxes?}
+	The pipeline we had in mind explicitly uses chains in the data representation. For black-box systems we would test the system by presenting it with board states where in order to win it needs to exploit the presence of chains.
+	
+	\subsection{How does your best game playing strategy compare to your other strategies (performance)?}
+	Compare our different strategies by competing with each other.
+	
+	\subsection{What is the performance/time/space trade-off between your different strategies?}
+	Evaluate results in function of the problem size.
+	
+\end{document}
