@@ -16,40 +16,45 @@
 \begin{document}
 	\maketitle
 	\section{Literature}
+	\subsection{Improving Monte-Carlo tree search for dots-and-boxes with a novel board representation and artificial neural networks \cite{7317912}}
+	This paper looks the most promising to us. It describes the most complete basis to start from. They represent the board using a feature vector (including chains) which serves as the input to an ANN, which evaluates the value of a board configuration. After training this ANN is used to make better than random predictions about which branches to explore in the search tree.
+	
+	\subsection{Game Specific Approaches to Monte Carlo Tree Search for Dots and Boxes}
+	This method does not depend on machine learning, but only on Monte Carlo Tree Search so it doesn't seem relevant for this course. The MCTS method however can still be used as a foundation.
+	
+	\subsection{Q-Learning for a Simple Board Game}
+	The paper describes a Q-learning agent, but it doesn't solve the problem of the large state-action space. Instead it only seems to focus on small board sizes, which already have been solved, for example by the approach presented in the next paper. We weren't able to find many sources on applying Q-learning on Dots-and-Boxes, so unfortunately we don't have a solution to the aforementioned problem. As a result we will be focusing more on the MCTS strategy, which looks more interesting to us.
+	
+	\subsection{Solving Dots-And-Boxes}
+	This paper presented many optimisations to the naive minimax strategy for solving Dots-and-Boxes. This may not seem useful for machine learning, however we think we can incorporate it into the strategy presented in the first paper when training the ANN, allowing us to train it with more data or larger board configurations. On top of this, we think it would also be interesting to train the ANN to predict the win margin instead of win-loss estimates since calculating the reference values doesn't seem to be any harder.
+	
+	\subsection{AlphaGo Zero \& AlphaZero}
+	It seems interesting to us to also explore an approach where we hard-code as little game-specific information in the agent, since this has already been proven to be effective for Go and chess. However after looking into AlphaZero, this approach may be too resource-heavy for this course.
 	
 	\section{Pipeline}
-	Summary of strategy in paper. We aim to test other strategies as well, but this is the main pipeline we want to study first.
-	State representation: use game specific knowledge of chains
-	Learning: ANN
-		input: board state, use minimax search to find score with an optimal strategy for both players
-		output: "outputs values between -1 and 1 where 1 means that
-		the current player will most certainly win and -1 means that
-		the player will surely lose."
-	Playing strategy: MCTS
-		use of ANN in simulation step
+	We want to use the pipeline described in the first paper \cite{7317912}, with some additions to optimize the solving of board configurations. We aim to test other strategies as well, but this is the main pipeline we want to study first.
+
+	\begin{description}
+		\item[State representation:] use game specific knowledge of chains
+		\item[Learning] artificial neural networks
+		\begin{itemize}
+			\item input: board state as feature vector, use improved search to find score with an optimal strategy for both players
+			\item output: estimate of the win margin for the current player given optimal play
+		\end{itemize}
+		\item[Playing strategy:] Monte Carlo Tree Search, using an ANN to estimate the value of board configurations in the simulation step
+	\end{description}
+
 	\section{Research questions}
-	\subsection{Which strategy for game playing do you use?}
-	Reading of research papers, implement different strategies and compare results
-	\subsection{Which data representation do you use?}
-	Board representation of chains, such that not the whole board should be scanned before each move
-	\subsection{Which machine learning model(s) do you use to represent the game state?}
-	same as previous question?
-	\subsection{How will you evaluate your solution?}
-	comparison of our implementation(s) with other implementations than our own
+	In this section we will discuss the strategy we plan to use to answer the following questions.
+	\paragraph{Which strategy for game playing do you use? Which data representation do you use? Which machine learning model(s) do you use to represent the game state? How do you force a decision within a given time limit?} Reading of research papers, implementing different strategies and comparing their results.
+	\paragraph{How will you evaluate your solution?} Comparison of our implementation(s) with other implementations than our own.
+	\paragraph{What is the computational and memory cost of preprocessing, learning and evaluating?} Analysis of experimental results for different problem sizes.
+	\paragraph{Can you represent and learn to recognize the concept of chains, a popular strategy in Dots-and-Boxes?} The pipeline we had in mind explicitly uses chains in the data representation. For black-box systems we would test the system by presenting it with board states where in order to win it needs to exploit the presence of chains.
+	\paragraph{How does your best game playing strategy compare to your other strategies (performance)?} Compare our different strategies by competing with each other.
+	\paragraph{What is the performance/time/space trade-off between your different strategies?} Evaluate results in function of the problem size.
 	
-	\subsection{What is the computational and memory cost of preprocessing, learning and evaluating?}
-	Analysis of experimental results for different problem sizes.
 	
-	\subsection{How do you force a decision within a given time limit?}
-	Restrict number of simulations in MCTS
 	
-	\subsection{Can you represent and learn to recognize the concept of chains, a popular strategy in Dots-and-Boxes?}
-	The pipeline we had in mind explicitly uses chains in the data representation. For black-box systems we would test the system by presenting it with board states where in order to win it needs to exploit the presence of chains.
-	
-	\subsection{How does your best game playing strategy compare to your other strategies (performance)?}
-	Compare our different strategies by competing with each other.
-	
-	\subsection{What is the performance/time/space trade-off between your different strategies?}
-	Evaluate results in function of the problem size.
-	
+	\bibliographystyle{unsrt}
+	\bibliography{first_report}
 \end{document}
