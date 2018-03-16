@@ -1,0 +1,3 @@
+[submodule "code/dotsandboxes"]
+	path = code/dotsandboxes
+	url = git@github.com:wannesm/dotsandboxes.git
