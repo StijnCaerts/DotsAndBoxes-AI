@@ -1,6 +1,9 @@
 # MLP
 Machine Learning: Project (2018)
 
+## How to use?
+* Clone the repo with `git clone --recurse-submodules` to load the submodule.
+
 
 ## References
 * [Y. Zhuang, S. Li, T. V. Peters and C. Zhang, "Improving Monte-Carlo tree search for dots-and-boxes with a novel board representation and artificial neural networks," 2015 IEEE Conference on Computational Intelligence and Games (CIG), Tainan, 2015, pp. 314-321.](http://ieeexplore.ieee.org/document/7317912/)
