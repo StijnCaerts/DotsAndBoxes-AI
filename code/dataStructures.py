@@ -30,9 +30,3 @@ class DisjointSet:
 
     def inSameSet(self, x, y):
         return self.find(x) == self.find(y)
-
-
-class Stack:
-    # TODO
-    def __init__(self):
-        print("Stack")
