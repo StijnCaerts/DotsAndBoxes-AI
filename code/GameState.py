@@ -33,7 +33,7 @@ class DotsAndBoxesState(GameState):
             for ci in range(nb_cols + 1):
                 columns.append({"v": 0, "h": 0})
             rows.append(columns)
-        self.cells = rows
+        self.board = rows
 
         self.score = {1: 0, 2: 0}
 
@@ -43,24 +43,24 @@ class DotsAndBoxesState(GameState):
         free_lines = self.get_moves()
         if len(free_lines) > 0:
             return None
-        elif self.score[0] > self.score[1]:
+        elif self.score[1] > self.score[2]:
             return 0
-        elif self.score[0] < self.score[1]:
+        elif self.score[1] < self.score[2]:
             return 1
         else:
             return 0.5
 
     def get_moves(self):
         free_lines = []
-        for ri in range(len(self.cells)):
-            row = self.cells[ri]
+        for ri in range(len(self.board)):
+            row = self.board[ri]
             for ci in range(len(row)):
                 cell = row[ci]
-                if ri < (len(self.cells) - 1) and cell["v"] == 0:
+                if ri < (len(self.board) - 1) and cell["v"] == 0:
                     free_lines.append((ri, ci, "v"))
                 if ci < (len(row) - 1) and cell["h"] == 0:
                     free_lines.append((ri, ci, "h"))
-        return free_lines
+        return set(free_lines)
 
     def play_move(self, move):
         r, c, o = move

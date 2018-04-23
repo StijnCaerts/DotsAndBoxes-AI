@@ -7,6 +7,12 @@ from GameState import GameState
 
 # https://github.com/DieterBuys/mcts-player/blob/master/game_controllers.py
 
+
+class GameController(object):
+    def get_next_move(self, state):
+        assert state.game_result is None
+
+
 class MCTSNode(object):
     """Monte Carlo Tree Node.
     Each node encapsulates a particular game state, the moves that
@@ -29,7 +35,7 @@ class MCTSNode(object):
         # Note that each node's plays count is equal
         # to the sum of its children's plays
         def ucb(child):
-            win_ratio = child.score / child.plays \
+            return child.score / child.plays \
                         + math.sqrt(2 * math.log(self.plays) / child.plays)
 
         return max(self.children, key=ucb)
@@ -67,7 +73,7 @@ State:
         return s
 
 
-class MCTSGameController:
+class MCTSGameController(GameController):
     """Game controller that uses MCTS to determine the next move.
     This is the class which implements the Monte Carlo Tree Search algorithm.
     It builds a game tree of MCTSNodes and samples the game space until a set
