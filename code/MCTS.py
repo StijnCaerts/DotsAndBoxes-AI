@@ -35,8 +35,9 @@ class MCTSNode(object):
         # Note that each node's plays count is equal
         # to the sum of its children's plays
         def ucb(child):
-            return child.score / child.plays \
+            win_ratio = child.score / child.plays \
                         + math.sqrt(2 * math.log(self.plays) / child.plays)
+            return win_ratio
 
         return max(self.children, key=ucb)
 
@@ -51,8 +52,20 @@ class MCTSNode(object):
         return child
 
     def get_score(self, result):
+        # return result
         if result == 0.5:
             return result
+
+        if self.state.player == 2:
+            if self.state.next_turn_player == result:
+                return 0.0
+            else:
+                return 1.0
+        else:
+            if self.state.next_turn_player == result:
+                return 1.0
+            else:
+                return 0.0
 
         if self.state.next_turn_player == result:
             return 0.0

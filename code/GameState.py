@@ -1,9 +1,11 @@
 from random import choice
 
+
 class GameState(object):
 
     def __init__(self):
         self.next_turn_player = 1
+        self.player = None
 
 
     @property
@@ -22,7 +24,7 @@ class GameState(object):
 
 
 class DotsAndBoxesState(GameState):
-    def __init__(self, nb_rows, nb_cols):
+    def __init__(self, nb_rows, nb_cols, player):
         super(DotsAndBoxesState, self).__init__()
 
         self.nb_rows = nb_rows
@@ -36,17 +38,22 @@ class DotsAndBoxesState(GameState):
         self.board = rows
 
         self.score = {1: 0, 2: 0}
+        self.player = player
+        print("Player: ", player)
 
     @property
     def game_result(self):
         # check if the board is full, then decide based on score
         free_lines = self.get_moves()
+        player = self.player
+        opponent = self.player % 2 + 1
+
         if len(free_lines) > 0:
             return None
-        elif self.score[1] > self.score[2]:
-            return 0
-        elif self.score[1] < self.score[2]:
+        elif self.score[player] > self.score[opponent]:
             return 1
+        elif self.score[player] < self.score[opponent]:
+            return 0
         else:
             return 0.5
 
@@ -64,7 +71,7 @@ class DotsAndBoxesState(GameState):
 
     def play_move(self, move):
         r, c, o = move
-        assert self.board[r][c][o] == 0
+        assert move in self.get_moves()
 
         # check if this move makes a box
         makes_box = False
@@ -101,3 +108,28 @@ class DotsAndBoxesState(GameState):
             # switch turns
             self.next_turn_player = self.next_turn_player % 2 + 1
 
+    def __repr__(self):
+        str = ""
+        for r in range(self.nb_rows + 1):
+            for o in ["h", "v"]:
+                for c in range(self.nb_cols + 1):
+                    if o == "h":
+                        str += "."
+                        if c != self.nb_cols:
+                            if self.board[r][c][o] == 0:
+                                str += "  "
+                            else:
+                                str += "__"
+                        else:
+                            str += "\n"
+                    elif o == "v":
+                        if r != self.nb_rows:
+                            if self.board[r][c][o] == 0:
+                                str += " "
+                            else:
+                                str += "|"
+                        if c != self.nb_cols:
+                            str += "  "
+                        else:
+                            str += "\n"
+        return str

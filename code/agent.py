@@ -16,7 +16,7 @@ class Agent(dba.DotsAndBoxesAgent):
     def __init__(self, player, nb_rows, nb_cols, timelimit):
         super(Agent, self).__init__(player, nb_rows, nb_cols, timelimit)
         self.GameStateClass = DotsAndBoxesState
-        self.game_state = self.GameStateClass(nb_rows, nb_cols)
+        self.game_state = self.GameStateClass(nb_rows, nb_cols, player)
         self.controller = MCTSGameController()
 
     def register_action(self, row, column, orientation, player):
@@ -26,8 +26,11 @@ class Agent(dba.DotsAndBoxesAgent):
         self.game_state.play_move(move)
 
     def next_action(self):
-        r, c, o = self.controller.get_next_move(self.game_state)
+        r, c, o = self.controller.get_next_move(self.game_state, time_allowed=self.timelimit)
         return r, c, o
+
+    def end_game(self):
+        super(Agent, self).end_game()
 
 
 # Adapted from provided code
