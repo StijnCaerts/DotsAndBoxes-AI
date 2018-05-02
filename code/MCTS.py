@@ -10,7 +10,8 @@ from GameState import GameState
 
 class GameController(object):
     def get_next_move(self, state):
-        assert state.game_result is None
+        # when you get a new move, it is assumed that the game is not ended yet
+        assert state.get_moves()
 
 
 class MCTSNode(object):

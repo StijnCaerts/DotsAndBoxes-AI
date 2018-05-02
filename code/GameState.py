@@ -43,12 +43,21 @@ class DotsAndBoxesState(GameState):
 
     @property
     def game_result(self):
+        def game_decided(nb_cols, nb_rows, scoreP, scoreO):
+            # the game is decided if the winner is already known even before the game is ended
+            # you're guaranteed to win the game if you have more than halve of the total points that can be earned
+            total_points = nb_rows * nb_cols
+            if scoreP > total_points // 2 or scoreO > total_points // 2:
+                return True
+            else:
+                return False
+
         # check if the board is full, then decide based on score
         free_lines = self.get_moves()
         player = self.player
         opponent = self.player % 2 + 1
 
-        if len(free_lines) > 0:
+        if not game_decided(self.nb_cols, self.nb_rows, self.score[player], self.score[opponent]) and len(free_lines) > 0:
             return None
         elif self.score[player] > self.score[opponent]:
             return 1
