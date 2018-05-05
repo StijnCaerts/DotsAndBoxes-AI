@@ -1,12 +1,10 @@
 from random import choice
 
-
 class GameState(object):
 
     def __init__(self):
         self.next_turn_player = 1
         self.player = None
-
 
     @property
     def game_result(self):
