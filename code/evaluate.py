@@ -19,8 +19,10 @@ from collections import defaultdict
 import random
 import uuid
 import time
+import csv
 
 logger = logging.getLogger(__name__)
+OUTPUTWRITER = None
 
 
 def start_competition(address1, address2, nb_rows, nb_cols, timelimit):
@@ -130,6 +132,7 @@ async def connect_agent(uri1, uri2, nb_rows, nb_cols, timelimit):
                     max(timings[i])))
 
     logger.info("Closed connections")
+    OUTPUTWRITER.writeln({'score1': points[1], 'score2': points[2], 'winner': winner})
 
 
 def user_action(r, c, o, cur_player, cells, points, nb_rows, nb_cols):
@@ -206,8 +209,30 @@ def main(argv=None):
     logger.setLevel(max(logging.INFO - 10 * (args.verbose - args.quiet), logging.DEBUG))
     logger.addHandler(logging.StreamHandler(sys.stdout))
 
+    global OUTPUTWRITER
+    OUTPUTWRITER = OutputWriter(args.output)
+
     for i in range(args.number):
         start_competition(args.agents[0], args.agents[1], args.rows, args.cols, args.timelimit)
+
+    OUTPUTWRITER.close()
+
+
+class OutputWriter:
+    def __init__(self, outputfile):
+        self.csvfile = open(outputfile, 'w', newline='')
+        try:
+            fieldnames = ['score1', 'score2', 'winner']
+            self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames)
+            self.writer.writeheader()
+        except IOError:
+            self.csvfile.close()
+
+    def writeln(self, csvdict):
+        self.writer.writerow(csvdict)
+
+    def close(self):
+        self.csvfile.close()
 
 
 if __name__ == "__main__":
