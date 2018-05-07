@@ -109,3 +109,4 @@ venv.bak/
 
 # Java stuff
 *.class
+java/.idea/*

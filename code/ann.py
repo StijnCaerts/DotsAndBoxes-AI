@@ -1,6 +1,7 @@
 from numpy import *
 from math import sqrt
 from copy import deepcopy
+from time import time
 
 class ANN:
 	
@@ -10,7 +11,7 @@ class ANN:
 	
 	INIT_SIGMA = 0.02
 	REL_STOP_MARGIN = 0.01
-	MAX_ITERATIONS = 10000000000
+	MAX_ITERATIONS = 1000000
 	ACTIVATION = tanh
 	D_ACTIVATION = lambda x: 1 - tanh(x)**2 # Derivative of tanh
 	VEC_ACTIVATION = vectorize(ACTIVATION)
@@ -30,8 +31,9 @@ class ANN:
 	def predict(self, input_vector):
 		
 		# Predicts the output for this input vector
-		# input_vector should be normalized
+		# input_vector will be normalized
 		
+		input_vector = input_vector/linalg.norm(input_vector)
 		return ANN.ACTIVATION(dot(self.output_weights, ANN.VEC_ACTIVATION(dot(self.hidden_weights, input_vector))))
 	
 	@staticmethod
@@ -43,10 +45,14 @@ class ANN:
 	def train(self, examples):
 		
 		#print("Training")
+		start = time()
 		
 		# examples is a list of (input, output)-tuples
-		# input should be normalized
+		# input will be normalized
 		# We stop when the weights have converged within some relative margin
+		
+		for example in examples:
+			example[0] = example[0]/linalg.norm(example[0])
 		
 		iteration = 0
 		while True:
@@ -94,9 +100,10 @@ class ANN:
 				break
 			diff = ANN.frob_norm(self.hidden_weights - prev_hidden_weights, self.output_weights - prev_output_weights)
 			base = ANN.frob_norm(self.hidden_weights, self.output_weights)
-			if base > 0 and diff/base < ANN.REL_STOP_MARGIN:
-				break
+			#if base > 0 and diff/base < ANN.REL_STOP_MARGIN:
+			#	break
 		
+		print(time() - start)
 		print("Stopped training after %s iterations."%iteration)
 
 # TESTING
@@ -122,7 +129,7 @@ def RMSE(ann, examples):
 	total = 0
 	for input_vector, output in examples:
 		total += (output - ann.predict(input_vector))**2
-	return sqrt(total)/len(examples)
+	return sqrt(total/len(examples))
 
 def generate_examples(amount, input_size, evaluate):
 	# evaluate is a function mapping an input vector onto a numerical value
@@ -130,7 +137,7 @@ def generate_examples(amount, input_size, evaluate):
 	inputs = random.normal(0, 100, (amount, input_size))
 	for i in range(amount):
 		input_vector = inputs[i]
-		examples.append((input_vector, evaluate(input_vector)))
+		examples.append([input_vector, evaluate(input_vector)])
 	return examples
 
 def test():
@@ -143,8 +150,8 @@ def test():
 	model = ANN(input_size, hidden_size)
 	
 	# Generate training data
-	training_data = generate_examples(100, input_size, real.predict)
-	validation_data = generate_examples(100, input_size, real.predict)
+	training_data = generate_examples(10000, input_size, real.predict)
+	validation_data = generate_examples(10000, input_size, real.predict)
 	
 	# Print initial difference, train, then print new difference
 	print("Initial difference:")
