@@ -1,25 +1,46 @@
+import MCTS.Board;
+import MCTS.CallLocation;
+import MCTS.Move;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GameState {
+public class GameState implements Board {
 
     private int rows, cols;
     private int next_turn_player;
-    private int score[] = new int[3];
+    private int score[] = new int[2];
     private boolean edges[][];
 
     public GameState(int rows, int cols) {
-        this.next_turn_player = 1;
+        this.next_turn_player = 0;
         this.rows = rows;
         this.cols = cols;
         this.edges = new boolean[2*rows + 1][2*cols + 1];
     }
 
+    private GameState(int rows, int cols, int next_turn_player, int[] score, boolean[][] edges) {
+        this.rows = rows;
+        this.cols = cols;
+        this.next_turn_player = next_turn_player;
+        this.score = Arrays.copyOf(score, score.length);
+        this.edges = new boolean[2*rows + 1][2*cols + 1];
+        // deep copy of edges
+        for(int i=0; i<edges.length; i++) {
+            for(int j=0; j<edges[i].length; j++) {
+                this.edges[i][j] = edges[i][j];
+            }
+        }
+
+    }
+
     public double gameResult() {
-        if(!this.gameDecided() && !this.getMoves().isEmpty()) {
-            if(score[1] > score[2]) {
+        if(this.gameDecided()) {
+            if(score[0] > score[1]) {
                 return 0;
-            } else if (score[2] > score[1]) {
+            } else if (score[1] > score[0]) {
                 return 1;
             } else {
                 return 0;
@@ -32,26 +53,85 @@ public class GameState {
     public boolean gameDecided() {
         int total_points = this.rows * this.cols;
         int half_points = total_points / 2;
-        if(score[1] > half_points || score[2] > half_points) {
+        if(score[0] + score[1] == total_points) return true;
+        if(score[0] > half_points || score[1] > half_points) {
             return true;
         } else {
             return false;
         }
     }
 
-    public Set<Move> getMoves() {
-        Set<Move> moves = new HashSet<>();
+    @Override
+    public GameState duplicate() {
+        return new GameState(this.rows, this.cols, this.next_turn_player, this.score, this.edges);
+    }
+
+    @Override
+    public ArrayList<Move> getMoves(CallLocation location) {
+        ArrayList<Move> moves = new ArrayList<>();
         for(int x = 0; x < 2*this.cols + 1; x++) {
             for(int y = (x + 1)%2; y < 2*this.rows + 1; y += 2) {
                 if (!this.edges[x][y]) {
-                    moves.add(new Move(x,y));
+                    moves.add(new DBMove(x,y));
                 }
             }
         }
         return moves;
     }
 
-    public void playMove(int x, int y) {
+    @Override
+    public void makeMove(Move m) {
+        if (!(m instanceof DBMove)) {
+            throw new IllegalArgumentException();
+        }
+        DBMove dbm = (DBMove) m;
+
+        this.playMove(dbm.x, dbm.y);
+    }
+
+    public boolean gameOver() {
+        return this.score[0] + this.score[1] == this.cols*this.rows;
+    }
+
+    @Override
+    public int getCurrentPlayer() {
+        return this.next_turn_player;
+    }
+
+    @Override
+    public int getQuantityOfPlayers() {
+        return 2;
+    }
+
+    @Override
+    public double[] getScore() {
+        double[] score = new double[2];
+        if(this.gameDecided()) {
+            if(score[0] > score[1]) {
+                score[0] = 1.0d;
+            } else if (score[1] > score[0]) {
+                score[1] = 1.0d;
+            } else {
+                score[0] = 0.5d;
+                score[1] = 0.5d;
+            }
+        } else {
+            throw new GameStateNotDecidedException();
+        }
+        return score;
+    }
+
+    @Override
+    public double[] getMoveWeights() {
+        return null;
+    }
+
+    @Override
+    public void bPrint() {
+
+    }
+
+    private void playMove(int x, int y) {
         boolean makes_box = false;
 
         // check if this move makes a box
@@ -97,7 +177,7 @@ public class GameState {
 
         if(!makes_box) {
             // switch players
-            this.next_turn_player = (this.next_turn_player % 2) + 1;
+            this.next_turn_player = (this.next_turn_player + 1) % 2;
         }
     }
 }

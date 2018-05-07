@@ -53,7 +53,8 @@ public class Handler extends WebSocketServer {
             int columns = grid.get(1).getAsInt();
             String gameId = jsonMessage.get("game").getAsString();
 
-            this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
+            //this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
+            this.agent = new PureMCTSAgent(player, timeLimit, rows, columns, gameId);
 
             // If we are player 1, respond right away
             if (this.agent.player == 1)
