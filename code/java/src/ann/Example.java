@@ -1,6 +1,10 @@
+package ann;
+
+import math.Vector;
+
 public class Example {
 
-    // Example for ANN
+    // ann.Example for ann.ANN
     // Just a value class
 
     public Vector input;

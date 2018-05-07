@@ -1,3 +1,5 @@
+package math;
+
 import java.util.Random;
 
 public class Matrix {
@@ -71,7 +73,7 @@ public class Matrix {
     public Vector multiply(Vector vector) {
 
         // Right-multiplies the matrix with a column vector
-        // Vector's size must be equal to this matrix's width
+        // math.Vector's size must be equal to this matrix's width
         // Returns a new vector
 
         double[] res = new double[this.height];

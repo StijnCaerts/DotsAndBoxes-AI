@@ -220,7 +220,7 @@ public class ISO8601Utils
                 } else {
                     // 18-Jun-2015, tatu: Looks like offsets only work from GMT, not UTC...
                     //    not sure why, but that's the way it looks. Further, Javadocs for
-                    //    `java.util.TimeZone` specifically instruct use of GMT as base for
+                    //    `java.math.TimeZone` specifically instruct use of GMT as base for
                     //    custom timezones... odd.
                     String timezoneId = "GMT" + timezoneOffset;
 //                    String timezoneId = "UTC" + timezoneOffset;

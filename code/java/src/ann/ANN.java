@@ -1,8 +1,13 @@
+package ann;
+
+import math.Matrix;
+import math.Vector;
+
 import java.util.Random;
 
 public class ANN {
 
-    // Implements a 2-layer ANN
+    // Implements a 2-layer ann.ANN
 
     public static final double initSigma = 0.02;
     public static final double relStopMargin = 0.01;
@@ -42,7 +47,7 @@ public class ANN {
         return Math.sqrt(Math.pow(a.frobNorm(), 2) + Math.pow(b.frobNorm(), 2));
     }
 
-    // ANN methods
+    // ann.ANN methods
 
     public double predict(Vector input) {
 
@@ -56,7 +61,7 @@ public class ANN {
 
     public void train(Example[] examples) {
 
-        // Trains this ANN on the given array of examples
+        // Trains this ann.ANN on the given array of examples
         // input vectors will always be normalized in this call
 
         long start = System.nanoTime();
@@ -112,7 +117,7 @@ public class ANN {
             // Convergence check
             double diff = ANN.frobNorm(prevHiddenWeights.multiply(-1).add(this.hiddenWeights), prevOutputWeights.multiply(-1).add(this.outputWeights));
             double base = ANN.frobNorm(this.hiddenWeights, this.outputWeights);
-            //if (base >= CustomMath.epsilon && diff/base < ANN.relStopMargin)
+            //if (base >= math.CustomMath.epsilon && diff/base < ann.ANN.relStopMargin)
             //    break;
 
         }
@@ -126,7 +131,7 @@ public class ANN {
 
     public static void test() {
 
-        // Test the ANN by having it model another ANN with identical topology but unknown weights
+        // Test the ann.ANN by having it model another ann.ANN with identical topology but unknown weights
 
         int inputSize = 5;
         int hiddenSize = 3;
@@ -147,7 +152,7 @@ public class ANN {
 
     public static Example[] generateExamples(int amount, int inputSize, ANN real) {
 
-        // Generates examples based on an ANN
+        // Generates examples based on an ann.ANN
         Example[] examples = new Example[amount];
         Random rand = new Random();
         for(int i = 0; i < amount; i++) {
