@@ -10,7 +10,7 @@ class ANN:
 	
 	INIT_SIGMA = 0.02
 	REL_STOP_MARGIN = 0.01
-	MAX_ITERATIONS = 1000
+	MAX_ITERATIONS = 10000000000
 	ACTIVATION = tanh
 	D_ACTIVATION = lambda x: 1 - tanh(x)**2 # Derivative of tanh
 	VEC_ACTIVATION = vectorize(ACTIVATION)
@@ -96,6 +96,8 @@ class ANN:
 			base = ANN.frob_norm(self.hidden_weights, self.output_weights)
 			if base > 0 and diff/base < ANN.REL_STOP_MARGIN:
 				break
+		
+		print("Stopped training after %s iterations."%iteration)
 
 # TESTING
 
@@ -141,8 +143,8 @@ def test():
 	model = ANN(input_size, hidden_size)
 	
 	# Generate training data
-	training_data = generate_examples(100000, input_size, real.predict)
-	validation_data = generate_examples(100000, input_size, real.predict)
+	training_data = generate_examples(100, input_size, real.predict)
+	validation_data = generate_examples(100, input_size, real.predict)
 	
 	# Print initial difference, train, then print new difference
 	print("Initial difference:")
