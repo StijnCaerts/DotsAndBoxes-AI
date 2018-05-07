@@ -1,113 +1,111 @@
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.net.InetSocketAddress;
 
-public class Handler {
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+import com.google.gson.JsonParser;
+
+public class Handler extends WebSocketServer {
+
+    public Agent agent;
+    public JsonParser parser = new JsonParser();
 
     public static void main(String args[]) {
 
-        try {
+        int port = 10015;
+        WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
+        System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
+        server.run();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            PrintWriter writer = new PrintWriter(new OutputStreamWriter(System.out));
+    }
 
-            // Socket opened, stay in while-true loop while listening for messages
-            Agent agent = null;
-            while(true) {
+    public Handler(InetSocketAddress address) {
+        super(address);
+    }
 
-                ArrayList<String> lines = new ArrayList<>();
-                // End of message is detected by a single { on a new line
-                while (lines.size() == 0 || !lines.get(lines.size() - 1).equals("}")) {
-                    lines.add(reader.readLine());
-                }
+    @Override
+    public void onOpen(WebSocket conn, ClientHandshake handshake) {
+        System.out.println("Opened new connection.");
+    }
 
-                // JSON parsing
-                // Normally you use a library for this, but to save on installation mess and because of the simple
-                // protocol, I'm just implementing a simple parser myself
-                HashMap<String, String> message = new HashMap<>();
-                for(String line : lines) {
-                    String[] parts = line.split(":");
-                    parts[0] = parts[0].substring(1, parts[1].length() - 1); // Remove quotation marks from parameter
-                    parts[1] = parts[1].substring(1);
-                    // Remove commas from ends of lines
-                    if (parts[1].endsWith(","))
-                        parts[1] = parts[1].substring(0, parts[1].length() - 1);
-                    // Remove quotation marks from string fields
-                    if (parts[1].startsWith("\""))
-                        parts[1] = parts[1].substring(1);
-                    if (parts[1].endsWith("\""))
-                        parts[1] = parts[1].substring(0, parts[1].length() - 1);
-                    message.put(parts[0], parts[1]);
-                }
+    @Override
+    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+        System.out.println("Closed connection.");
+    }
 
-                String type = message.get("type");
-                if (type.equals("start")) {
+    @Override
+    public void onMessage(WebSocket conn, String message) {
 
-                    // Handle start message
-                    System.err.println("Received start message!");
+        JsonObject jsonMessage = this.parser.parse(message).getAsJsonObject(); // Should always be a dict/map
+        String type = jsonMessage.get("type").getAsString();
+        if (type.equals("start")) {
 
-                    // Read variables
-                    int player = Integer.parseInt(message.get("player"));
-                    double timeLimit = Double.parseDouble(message.get("timeLimit"));
-                    String[] grid = message.get("grid").split(",");
-                    int rows = Integer.parseInt(grid[0].substring(1));
-                    int columns = Integer.parseInt(grid[1].substring(0, grid[1].length() - 1));
-                    String gameId = message.get("game");
+            // Handle start message
 
-                    agent = new TestAgent(player, timeLimit, rows, columns, gameId);
+            // Read variables
+            int player = jsonMessage.get("player").getAsInt();
+            double timeLimit = jsonMessage.get("timelimit").getAsDouble();
+            JsonArray grid = jsonMessage.get("grid").getAsJsonArray();
+            int rows = grid.get(0).getAsInt();
+            int columns = grid.get(1).getAsInt();
+            String gameId = jsonMessage.get("game").getAsString();
 
-                    // If we are player 1, respond right away
-                    if (agent.player == 1)
-                        Handler.replyMove(writer, agent);
+            this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
 
-                } else if (type.equals("action")) {
+            // If we are player 1, respond right away
+            if (this.agent.player == 1)
+                replyMove(conn);
 
-                    // Handle action message
-                    System.err.println("Received action message!");
+        } else if (type.equals("action")) {
 
-                    // Read variables
-                    int nextPlayer = Integer.parseInt(message.get("nextPlayer"));
-                    String[] score = message.get("score").split(",");
-                    int score1 = Integer.parseInt(score[0].substring(1));
-                    int score2 = Integer.parseInt(score[1].substring(0, score[1].length() - 1));
-                    int ownScore = (agent.player == 1 ? score1 : score2);
-                    int opponentScore = (agent.player == 1 ? score2 : score1);
-                    String[] location = message.get("location").split(",");
-                    int x = 2*Integer.parseInt(location[0].substring(1)) + (message.get("orientation") == "h" ? 1 : 0);
-                    int y = 2*Integer.parseInt(location[1].substring(0, location[1].length() - 1)) + (message.get("orientation") == "v" ? 1 : 0);
+            // Handle action message
 
-                    agent.registerAction(ownScore, opponentScore, x, y);
+            // Read variables
+            int nextPlayer = jsonMessage.get("nextplayer").getAsInt();
+            JsonArray scores = jsonMessage.get("score").getAsJsonArray();
+            int score1 = scores.get(0).getAsInt();
+            int score2 = scores.get(1).getAsInt();
+            int ownScore = scores.get(this.agent.player - 1).getAsInt();
+            int opponentScore = scores.get(this.agent.player%2).getAsInt();
+            JsonArray location = jsonMessage.get("location").getAsJsonArray();
+            String orientation = jsonMessage.get("orientation").getAsString();
+            int x = 2*location.get(1).getAsInt() + (orientation.equals("h") ? 1 : 0);
+            int y = 2*location.get(0).getAsInt() + (orientation.equals("v") ? 1 : 0);
 
-                    // If we are nextPlayer, respond
-                    if (agent.player == nextPlayer)
-                        Handler.replyMove(writer, agent);
+            this.agent.registerAction(ownScore, opponentScore, x, y);
 
-                } else if (type.equals("end")) {
-                    // Handle end message
-                    System.err.println("Received end message! Aborting program");
-                    break;
-                }
+            // If we are nextPlayer, respond
+            if (this.agent.player == nextPlayer)
+                replyMove(conn);
 
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else if (type.equals("end")) {
+            // Handle end message
+            System.out.println("Received end message!");
         }
 
     }
 
-    private static void replyMove(PrintWriter writer, Agent agent) {
-        // Queries the agent for its next move and writes it using the given writer
-        int[] move = agent.getNextMove();
+    @Override
+    public void onError(WebSocket conn, Exception ex) {
+        System.out.println("An error occurred on the connection.");
+        System.out.println(ex.toString());
+    }
+
+    @Override
+    public void onStart() {
+        System.out.println("Server started successfully.");
+    }
+
+    private void replyMove(WebSocket conn) {
+        // Queries the agent for its next move and writes it using the given connection
+        int[] move = this.agent.getNextMove();
         int x = move[0];
         int y = move[1];
-        writer.write("{\n" +
-                "    \"type\": \"action\",\n" +
-                "    \"location\": [" + Integer.toString(x/2) + ", " + Integer.toString(y/2) + "],\n" +
-                "    \"orientation\": " + (x%2 == 0 ? "v" : "h") + "\n"
-        );
+        String message = "{\"type\": \"action\", \"location\": [" + Integer.toString(y/2) + ", " + Integer.toString(x/2) + "], \"orientation\": " + (x%2 == 0 ? "\"v\"" : "\"h\"") + "}";
+        conn.send(message);
 
     }
 

@@ -16,7 +16,7 @@ public class TestAgent extends Agent {
     public int[] getNextMove() {
         // Simply fills in the next available edge
         for(int x = 0; x < 2*columns + 1; x++) {
-            for(int y = (x + 1)%2; y < 2*rows + 1; y++) {
+            for(int y = (x + 1)%2; y < 2*rows + 1; y += 2) {
                 if (!this.edges[x][y])
                     return new int[] {x, y};
             }
