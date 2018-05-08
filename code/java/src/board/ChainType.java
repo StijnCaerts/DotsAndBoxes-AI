@@ -1,5 +1,5 @@
 package board;
 
 public enum ChainType {
-    CLOSED, HALF_OPEN, OPEN
+    OPEN, LOOP, HALF_OPEN, CLOSED
 }
