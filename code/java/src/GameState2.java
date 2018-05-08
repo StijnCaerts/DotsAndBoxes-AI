@@ -1,26 +1,25 @@
-import MCTS2.Board;
-import MCTS2.Move;
+import MCTS3.Board;
+import MCTS3.Move;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GameState implements Board {
+public class GameState2 extends Board {
 
     private int rows, cols;
     private int next_turn_player;
     private int score[] = new int[2];
     private boolean edges[][];
 
-    public GameState(int rows, int cols) {
+    public GameState2(int rows, int cols) {
         this.next_turn_player = 0;
         this.rows = rows;
         this.cols = cols;
         this.edges = new boolean[2*rows + 1][2*cols + 1];
     }
 
-    private GameState(int rows, int cols, int next_turn_player, int[] score, boolean[][] edges) {
+    private GameState2(int rows, int cols, int next_turn_player, int[] score, boolean[][] edges) {
         this.rows = rows;
         this.cols = cols;
         this.next_turn_player = next_turn_player;
@@ -32,9 +31,9 @@ public class GameState implements Board {
                 this.edges[i][j] = edges[i][j];
             }
         }
-
     }
 
+    @Override
     public double gameResult() {
         if(this.gameDecided()) {
             if(score[0] > score[1]) {
@@ -61,13 +60,8 @@ public class GameState implements Board {
     }
 
     @Override
-    public GameState duplicate() {
-        return new GameState(this.rows, this.cols, this.next_turn_player, this.score, this.edges);
-    }
-
-    @Override
-    public ArrayList<Move> getMoves() {
-        ArrayList<Move> moves = new ArrayList<>();
+    public Set<Move> getMoves() {
+        HashSet<Move> moves = new HashSet<>();
         for(int x = 0; x < 2*this.cols + 1; x++) {
             for(int y = (x + 1)%2; y < 2*this.rows + 1; y += 2) {
                 if (!this.edges[x][y]) {
@@ -79,55 +73,18 @@ public class GameState implements Board {
     }
 
     @Override
-    public void makeMove(Move m) {
-        if (!(m instanceof DBMove)) {
+    public void playMove(Move move) {
+        if (!(move instanceof DBMove)) {
             throw new IllegalArgumentException();
         }
-        DBMove dbm = (DBMove) m;
+        DBMove dbm = (DBMove) move;
 
         this.playMove(dbm.x, dbm.y);
     }
 
-    public boolean gameOver() {
-        return this.score[0] + this.score[1] == this.cols*this.rows;
-    }
-
     @Override
-    public int getCurrentPlayer() {
-        return this.next_turn_player;
-    }
-
-    @Override
-    public int getQuantityOfPlayers() {
-        return 2;
-    }
-
-    @Override
-    public double[] getScore() {
-        double[] s = new double[2];
-        if(this.gameDecided()) {
-            if(this.score[0] > this.score[1]) {
-                s[0] = 1.0d;
-            } else if (this.score[1] > this.score[0]) {
-                s[1] = 1.0d;
-            } else {
-                s[0] = 0.5d;
-                s[1] = 0.5d;
-            }
-        } else {
-            throw new GameStateNotDecidedException();
-        }
-        return s;
-    }
-
-    @Override
-    public double[] getMoveWeights() {
-        return new double[0];
-    }
-
-    @Override
-    public void bPrint() {
-
+    public Board duplicate() {
+        return new GameState2(this.rows, this.cols, this.next_turn_player, this.score, this.edges);
     }
 
     private void playMove(int x, int y) {
