@@ -22,7 +22,7 @@ import com.google.gson.reflect.TypeToken;
  * Creates type adapters for set of related types. Type adapter factories are
  * most useful when several types share similar structure in their JSON form.
  *
- * <h3>Example: Converting enums to lowercase</h3>
+ * <h3>ann.Example: Converting enums to lowercase</h3>
  * In this example, we implement a factory that creates type adapters for all
  * enums. The type adapters will write enums in lowercase, despite the fact
  * that they're defined in {@code CONSTANT_CASE} in the corresponding Java
@@ -90,7 +90,7 @@ import com.google.gson.reflect.TypeToken;
  * If multiple factories support the same type, the factory registered earlier
  * takes precedence.
  *
- * <h3>Example: composing other type adapters</h3>
+ * <h3>ann.Example: composing other type adapters</h3>
  * In this example we implement a factory for Guava's {@code Multiset}
  * collection type. The factory can be used to create type adapters for
  * multisets of any element type: the type adapter for {@code

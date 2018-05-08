@@ -52,7 +52,7 @@ import static com.google.gson.stream.JsonScope.NONEMPTY_OBJECT;
  *       Finally close the object using {@link #endObject()}.
  * </ul>
  *
- * <h3>Example</h3>
+ * <h3>ann.Example</h3>
  * Suppose we'd like to encode a stream of messages such as the following: <pre> {@code
  * [
  *   {

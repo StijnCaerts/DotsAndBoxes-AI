@@ -316,7 +316,7 @@ public final class $Gson$Types {
    */
   public static Type[] getMapKeyAndValueTypes(Type context, Class<?> contextRawType) {
     /*
-     * Work around a problem with the declaration of java.util.Properties. That
+     * Work around a problem with the declaration of java.math.Properties. That
      * class should extend Hashtable<String, String>, but it's declared to
      * extend Hashtable<Object, Object>.
      */
