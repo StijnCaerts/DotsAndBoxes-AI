@@ -41,7 +41,7 @@ public class GameState2 extends Board {
             } else if (score[1] > score[0]) {
                 return 1;
             } else {
-                return 0;
+                return 0.5;
             }
         } else {
             throw new GameStateNotDecidedException();
