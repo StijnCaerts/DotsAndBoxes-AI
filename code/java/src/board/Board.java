@@ -1,6 +1,8 @@
 package board;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 
 public class Board {
 
@@ -27,6 +29,7 @@ public class Board {
     public int[][] valence; // Amount of lines next to box, starts at 0
     public Chain[][] chainAt; // Stores the chain each box belongs to, null for boxes with valence 0, 1, or 4, not null for all boxes with valence 2 or 3
     public ArrayList<Chain> chains;
+    public HashSet<Integer> movesLeft;
 
     // ANN input
     // We only keep track of open chain sizes since closed and half-open chains should be played by MCTS first (including half-hearted hand-outs)
@@ -41,6 +44,12 @@ public class Board {
         this.edges = new boolean[2*columns + 1][2*rows + 1];
         this.valence = new int[columns][rows];
         this.chainAt = new Chain[columns][rows];
+        this.movesLeft = new HashSet<>();
+        for(int x = 0; x < 2*columns + 1; x++) {
+            for(int y = (x + 1)%2; y < 2*rows + 1; y += 2) {
+                this.movesLeft.add(edgeToInt(x, y));
+            }
+        }
 
     }
 
@@ -50,6 +59,9 @@ public class Board {
 
         // Update edge matrix
         this.edges[x][y] = true;
+
+        // Update possible moves
+        this.movesLeft.remove(edgeToInt(x, y));
 
         // Update valence matrix
         this.boxClosed = false;
@@ -95,6 +107,7 @@ public class Board {
         int box = boxToInt(x, y);
         int x2, y2;
         switch(this.valence[x][y]) {
+
             case 2:
 
                 // New valence = 2: box wasn't part of a chain but will be part of a chain
@@ -174,13 +187,7 @@ public class Board {
                                 // Check which side of chain connects to new box
                                 int[] chain2Start = intToBox(chain2.boxes.get(0));
                                 Board.appendChain(chain1, chain2, !((chain2Start[0] == x2 && chain2Start[1] == y2) || (chain2Start[0] == x3 && chain2Start[1] == y3)));
-                                // Mark correct chain in chainAt table
-                                for(int i = 0; i < chain2.size; i++) {
-                                    int addedBox = chain2.boxes.get(i);
-                                    int[] addedBoxCoords = intToBox(addedBox);
-                                    this.chainAt[addedBoxCoords[0]][addedBoxCoords[1]] = chain1;
-                                }
-                                this. chains.remove(chain2);
+                                markAndRemoveChain(chain2, chain1);
 
                                 // Update chain 1 type
                                 if (chain2.type == ChainType.HALF_OPEN) {
@@ -204,7 +211,7 @@ public class Board {
                                     int[] chain2Start = intToBox(chain2.boxes.get(0));
                                     Board.appendChain(chain1, chain2, !(chain2Start[0] == x3 && chain2Start[1] == y3));
                                 }
-                                this.chains.remove(chain2);
+                                markAndRemoveChain(chain2, chain1);
 
                             }
 
@@ -215,6 +222,7 @@ public class Board {
                 }
 
                 break;
+
             case 3:
 
                 // New valence = 3: box was already part of a chain and will be part of a chain
@@ -227,13 +235,43 @@ public class Board {
                 // Other new valence = 4: we're in a half-open or closed chain, make it one shorter
 
                 chain = this.chainAt[x][y];
+                int index = chain.boxes.indexOf(box); // Own position in chain;
+                int splitIndex;
                 switch(chain.type) {
                     case OPEN:
+
+                        splitIndex = findSplitIndex(chain, x, y, index);
+                        if (splitIndex == 0) {
+                            // Split at start, just change chain type
+                            chain.type = ChainType.HALF_OPEN;
+                        } else if (splitIndex == chain.size) {
+                            // Split at end, reverse box order and change chain type
+                            Collections.reverse(chain.boxes);
+                            chain.type = ChainType.HALF_OPEN;
+                        } else {
+                            if (!this.chainSplit) {
+
+                                // Split in middle, split into two half-open chains
+                                // We keep first part in old chain and reverse it, while copying the second part to a new chain
+
+                                Chain newChain = new Chain(new ArrayList<>(chain.boxes.subList(splitIndex, chain.size)), ChainType.HALF_OPEN); // Copy second part to new chain
+                                markChain(newChain, newChain); // Mark boxes in second part as part of new chain
+                                this.chains.add(newChain);
+                                chain.boxes.subList(splitIndex, chain.size).clear(); // Remove second part from old chain
+                                Collections.reverse(chain.boxes); // Fix order in old chain
+                                chain.size = splitIndex; // Update old chain's size
+                                chain.type = ChainType.HALF_OPEN; // Fix old chain's type
+
+                                this.chainSplit = true;
+
+                            }
+                        }
+
                         break;
                     case LOOP:
 
                         // Marked edge must be inside of loop, so loop becomes closed chain
-                        // This case can only occur if this box is the first to be updated
+                        // This case can only occur if this box is the first to be updated, so no check for chain splits
                         // Chain size stays the same, boxes may need to be re-ordered
 
                         // Find neighboring connected box
@@ -252,36 +290,81 @@ public class Board {
                             }
                         }
 
-                        int index = chain.boxes.indexOf(box); // Own position in chain
-                        ArrayList<Integer> newBoxes = new ArrayList<>();
-                        newBoxes.add(box);
+                        // Rotate boxes to make sure the list starts and ends with the right boxes
                         if (chain.boxes.get((index + 1)%chain.size) == neighborBox) {
                             // Same ordering
-                            for(int i = (index + 1)%chain.size; i != index; i = ((i + 1)%chain.size)) {
-                                newBoxes.add(chain.boxes.get(i));
-                            }
+                            // Rotate list so that box is in front
+                            Collections.rotate(chain.boxes, -index);
                         } else {
                             // Reverse ordering
-                            for(int i = (index - 1)%chain.size; i != index; i = ((i - 1)%chain.size)) {
-                                newBoxes.add(chain.boxes.get(i));
-                            }
+                            // Rotate list so that box is at the back
+                            Collections.rotate(chain.boxes, chain.size - 1 - index);
                         }
-                        chain.boxes = newBoxes;
 
                         chain.type = ChainType.CLOSED;
                         this.chainSplit = true;
 
                         break;
                     case HALF_OPEN:
+
+                        splitIndex = findSplitIndex(chain, x, y, index);
+                        if (splitIndex == chain.size) {
+                            // Split at end, just change chain type
+                            chain.type = ChainType.HALF_OPEN;
+                        } else {
+                            if (!this.chainSplit) {
+
+                                // Split in middle, split into a closed and half-open chain
+                                // We keep first part in old chain, while copying the second part to a new chain
+
+                                Chain newChain = new Chain(new ArrayList<>(chain.boxes.subList(splitIndex, chain.size)), ChainType.HALF_OPEN); // Copy second part to new chain
+                                markChain(newChain, newChain); // Mark boxes in second part as part of new chain
+                                this.chains.add(newChain);
+                                chain.boxes.subList(splitIndex, chain.size).clear(); // Remove second part from old chain
+                                chain.size = splitIndex; // Update old chain's size
+                                chain.type = ChainType.CLOSED; // Fix old chain's type
+
+                                this.chainSplit = true;
+
+                            }
+                        }
+
                         break;
                     case CLOSED:
 
                         if (!this.chainSplit) {
+
                             // There is a split within a closed chain
+                            // Since this node's new valence is 4 it can't be all the way at the beginning or end
 
-                            // Check if split is at beginning or end of chain
-
-                            //TODO: Continue here
+                            // Handle different split cases
+                            splitIndex = findSplitIndex(chain, x, y, index);
+                            if (splitIndex == 1) {
+                                // Split at start of chain
+                                if (chain.size == 2) {
+                                    // Remove full chain
+                                    markAndRemoveChain(chain, null);
+                                } else {
+                                    // Remove first box from chain
+                                    int[] removedBoxCoords = intToBox(chain.boxes.get(0));
+                                    this.chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = null;
+                                    chain.boxes.remove(0);
+                                }
+                            } else if (splitIndex == chain.size) {
+                                // Split at end but not start of chain
+                                // Remove last box from chain
+                                int[] removedBoxCoords = intToBox(chain.boxes.get(chain.size - 1));
+                                this.chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = null;
+                                chain.boxes.remove(0);
+                            } else {
+                                // Split somewhere in the middle
+                                // We keep first part in the old chain and create a new chain for the second part
+                                Chain newChain = new Chain(new ArrayList<>(chain.boxes.subList(splitIndex, chain.size)), ChainType.CLOSED); // Copy second part to new chain
+                                markChain(newChain, newChain); // Mark boxes in second part as part of new chain
+                                this.chains.add(newChain);
+                                chain.boxes.subList(splitIndex, chain.size).clear(); // Remove second part from old chain
+                                chain.size = splitIndex; // Update old chain's size
+                            }
 
                             this.chainSplit = true;
                         }
@@ -292,10 +375,38 @@ public class Board {
                 }
 
                 break;
+
             case 4:
+
                 // New valence = 4: box was part of a chain but will not be part of a chain anymore
                 // Remove box from its old chain and update chain (removing it if it has size 0)
+
+                if (!this.chainSplit) {
+
+                    // Box wasn't closed as part of some other chain split yet
+
+                    // Check if box needs updating
+                    chain = this.chainAt[x][y];
+                    index = chain.boxes.indexOf(box); // Own position in chain;
+                    int[] neighborCoords = intToBox(chain.boxes.get(index == 0 ? 1 : chain.size - 1));
+                    int actualNeighborValence = 0; // May not equal valence stored in matrix because the box still needs to be updated
+                    for(int[] neighborDirection : Board.neighborDirections) {
+                        if (this.edges[2 * neighborCoords[0] + 1 + neighborDirection[0]][2 * neighborCoords[1] + 1 + neighborDirection[1]]) {
+                            actualNeighborValence++;
+                        }
+                    }
+
+                    if (actualNeighborValence == 4) {
+                        // Neighbor box also has new valence 4, so we will need to perform an update ourselves
+                        // Mark boxes and remove chain
+                        markAndRemoveChain(chain, null);
+                        this.chainSplit = true;
+                    }
+
+                }
+
                 break;
+
             default:
                 // New valence < 2: do nothing, box wasn't and will not be in a chain
                 break;
@@ -339,6 +450,58 @@ public class Board {
         }
     }
 
+    public void markAndRemoveChain(Chain toBeMarked, Chain marker) {
+        // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the list of chains
+        markChain(toBeMarked, marker);
+        this.chains.remove(toBeMarked);
+    }
+
+    public void markChain(Chain toBeMarked, Chain marker) {
+        // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the list of chains
+        // marker can be null, toBeMarked cannot be null
+        // Mark correct chain in chainAt table
+        for(int i = 0; i < toBeMarked.size; i++) {
+            int addedBox = toBeMarked.boxes.get(i);
+            int[] addedBoxCoords = intToBox(addedBox);
+            this.chainAt[addedBoxCoords[0]][addedBoxCoords[1]] = marker;
+        }
+
+    }
+
+    public int findSplitIndex(Chain chain, int x, int y, int index) {
+        // Look for split around box (with coordinates x and y) at index in chain
+        // Chain type should still be its old type
+        // Should not be used for loops
+        // split index meaning: index + 0 indicates split happened in front of box in chain.boxes, index + 1 indicates behind
+
+        // Check for split in middle of chain
+        for(int i = 0; i < 2; i++) {
+            int testIndex = index + 2*i - 1;
+            if (testIndex >= 0 && testIndex < chain.size) {
+                int[] neighborCoords = intToBox(chain.boxes.get(index + 2 * i - 1));
+                if (!boxesConnected(x, y, neighborCoords[0], neighborCoords[1]))
+                    return i;
+            }
+        }
+
+        // Split happened at edges of chain
+        if (chain.type == ChainType.HALF_OPEN) {
+            // Split must have happened at the end (open side)
+            return chain.size;
+        } else {
+            // Chain must (have been) open, check both sides
+            for(int i = 0; i < chain.size; i += chain.size - 1) {
+                int[] boxCoords = intToBox(chain.boxes.get(i));
+                if (this.valence[boxCoords[0]][boxCoords[1]] == 3) {
+                    return (i > 0 ? chain.size : 0);
+                }
+            }
+        }
+
+        assert(false);
+        return -1;
+    }
+
     public int boxToInt(int x, int y) {
         // Converts a box to an int ID
         // Used to store boxes as an ArrayList in the Chain class
@@ -348,6 +511,16 @@ public class Board {
     public int[] intToBox(int box) {
         // Converts an int ID to a box
         return new int[] {box%this.columns, box/this.columns};
+    }
+
+    public int edgeToInt(int x, int y) {
+        // Converts a edge to an int ID
+        return y*(2*this.columns + 1) + x;
+    }
+
+    public int[] intToEdge(int edge) {
+        // Converts an int ID to a edge
+        return new int[] {edge%(2*this.columns + 1), edge/(2*this.columns + 1)};
     }
 
 }
