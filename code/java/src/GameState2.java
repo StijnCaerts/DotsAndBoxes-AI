@@ -48,6 +48,7 @@ public class GameState2 extends Board {
         }
     }
 
+    @Override
     public boolean gameDecided() {
         int total_points = this.rows * this.cols;
         int half_points = total_points / 2;

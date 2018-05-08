@@ -28,7 +28,7 @@ public class MCTS {
         Board b = board.duplicate();
 
         Move m = b.getRandomMove();
-        while(m != null) {
+        while(m != null && !b.gameDecided()) {
             b.playMove(m);
             m = b.getRandomMove();
 

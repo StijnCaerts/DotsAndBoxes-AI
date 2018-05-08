@@ -11,6 +11,7 @@ public abstract class Board {
     public abstract Set<Move> getMoves();
     public abstract void playMove(Move move);
     public abstract Board duplicate();
+    public abstract boolean gameDecided();
 
     public Move getRandomMove() {
         if(!getMoves().isEmpty()) {
