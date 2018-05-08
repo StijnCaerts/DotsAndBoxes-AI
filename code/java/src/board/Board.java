@@ -414,11 +414,20 @@ public class Board {
 
     }
 
+    public static boolean boxesAdjacent(int x1, int y1, int x2, int y2) {
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2) == 1;
+    }
+
     public boolean boxesConnected(int x1, int y1, int x2, int y2) {
         // Calculates whether or not these boxes don't have a line in between them
-        // Should only be called for neighboring boxes
+        // Should only be called for adjacent boxes
         // Because of the way the edge coordinate system works, the edge in between neighboring boxes is simply the average of the box coordinates converted to the edge coordinate system
         return !this.edges[x1 + x2 + 1][y1 + y2 + 1];
+    }
+
+    public boolean boxesAdjacentAndConnected(int x1, int y1, int x2, int y2) {
+        // Assumes coordinates are actual box coordinates on this board, but don't need to be adjacent
+        return Board.boxesAdjacent(x1, y1, x2, y2) && boxesConnected(x1, y1, x2, y2);
     }
 
     public static void prependChain(Chain main, Chain add, boolean reverse) {
