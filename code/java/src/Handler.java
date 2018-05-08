@@ -15,7 +15,7 @@ public class Handler extends WebSocketServer {
 
     public static void main(String args[]) {
 
-        int port = 10015;
+        int port = 10016;
         WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
         System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
         server.run();
