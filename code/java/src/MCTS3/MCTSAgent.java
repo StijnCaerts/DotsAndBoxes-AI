@@ -1,20 +1,21 @@
-import MCTS3.MCTS;
-import MCTS3.Move;
+package MCTS3;
 
-public class MCTSAgent2 extends Agent {
+import main.Agent;
+
+public class MCTSAgent extends Agent {
 
     public MCTS mcts;
-    GameState2 gs;
-    public MCTSAgent2(int player, double timeLimit, int rows, int columns, String gameId) {
+    GameState gs;
+    public MCTSAgent(int player, double timeLimit, int rows, int columns, String gameId) {
         super(player, timeLimit, rows, columns, gameId);
-        //this.gs = new GameState2(rows, columns);
+        //this.gs = new MCTS3.GameState(rows, columns);
         this.mcts = new MCTS();
-        this.mcts.init(new GameState2(rows, columns));
+        this.mcts.init(new GameState(rows, columns));
     }
 
     @Override
     public void registerAction(int ownScore, int opponentScore, int x, int y) {
-        //this.gs.playMove(new DBMove(x,y));
+        //this.gs.playMove(new MCTS3.DBMove(x,y));
         this.mcts.registerMove(new DBMove(x,y));
     }
 

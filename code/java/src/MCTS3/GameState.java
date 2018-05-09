@@ -1,25 +1,26 @@
-import MCTS3.Board;
-import MCTS3.Move;
+package MCTS3;
+
+import exceptions.GameStateNotDecidedException;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GameState2 extends Board {
+public class GameState extends Board {
 
     private int rows, cols;
     private int next_turn_player;
     private int score[] = new int[2];
     private boolean edges[][];
 
-    public GameState2(int rows, int cols) {
+    public GameState(int rows, int cols) {
         this.next_turn_player = 0;
         this.rows = rows;
         this.cols = cols;
         this.edges = new boolean[2*rows + 1][2*cols + 1];
     }
 
-    private GameState2(int rows, int cols, int next_turn_player, int[] score, boolean[][] edges) {
+    private GameState(int rows, int cols, int next_turn_player, int[] score, boolean[][] edges) {
         this.rows = rows;
         this.cols = cols;
         this.next_turn_player = next_turn_player;
@@ -85,7 +86,7 @@ public class GameState2 extends Board {
 
     @Override
     public Board duplicate() {
-        return new GameState2(this.rows, this.cols, this.next_turn_player, this.score, this.edges);
+        return new GameState(this.rows, this.cols, this.next_turn_player, this.score, this.edges);
     }
 
     private void playMove(int x, int y) {

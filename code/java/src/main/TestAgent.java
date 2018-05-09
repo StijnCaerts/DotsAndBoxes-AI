@@ -1,3 +1,7 @@
+package main;
+
+import main.Agent;
+
 public class TestAgent extends Agent {
 
     public boolean[][] edges; // true means edge has been filled in

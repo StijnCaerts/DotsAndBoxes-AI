@@ -1,3 +1,5 @@
+package main;
+
 public abstract class Agent {
 
     public final int player;

@@ -1,8 +1,8 @@
-import MCTS2.Move;
+package MCTS3;
 
 import java.util.Objects;
 
-public class DBMove implements Move, MCTS3.Move {
+public class DBMove implements MCTS3.Move {
     public final int x;
     public final int y;
 
@@ -26,10 +26,5 @@ public class DBMove implements Move, MCTS3.Move {
     @Override
     public String toString() {
         return "Move: x=" + Integer.toString(this.x) + ", y=" + Integer.toString(this.y);
-    }
-
-    @Override
-    public int compareTo(Move o) {
-        return 0;
     }
 }

@@ -1,5 +1,8 @@
+package main;
+
 import java.net.InetSocketAddress;
 
+import MCTS3.MCTSAgent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.java_websocket.WebSocket;
@@ -52,8 +55,8 @@ public class Handler extends WebSocketServer {
             int columns = grid.get(1).getAsInt();
             String gameId = jsonMessage.get("game").getAsString();
 
-            //this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
-            this.agent = new MCTSAgent2(player, timeLimit, rows, columns, gameId);
+            //this.agent = new main.TestAgent(player, timeLimit, rows, columns, gameId);
+            this.agent = new MCTSAgent(player, timeLimit, rows, columns, gameId);
 
             // If we are player 1, respond right away
             if (this.agent.player == 0)

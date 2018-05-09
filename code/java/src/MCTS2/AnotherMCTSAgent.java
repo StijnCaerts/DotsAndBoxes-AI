@@ -1,12 +1,15 @@
+package MCTS2;
+
+import MCTS2.GameState;
 import MCTS2.MCTS;
 import MCTS2.Move;
-import MCTS2.FinalSelectionPolicy;
+import main.Agent;
 
-public class PureMCTSAgent extends Agent {
+public class AnotherMCTSAgent extends main.Agent {
 
     MCTS mcts;
     GameState gs;
-    public PureMCTSAgent(int player, double timeLimit, int rows, int columns, String gameId) {
+    public AnotherMCTSAgent(int player, double timeLimit, int rows, int columns, String gameId) {
         super(player, timeLimit, rows, columns, gameId);
         this.mcts = new MCTS();
         this.mcts.enableRootParallelisation(16);
