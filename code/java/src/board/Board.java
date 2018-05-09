@@ -44,6 +44,7 @@ public class Board {
         this.edges = new boolean[2*columns + 1][2*rows + 1];
         this.valence = new int[columns][rows];
         this.chainAt = new Chain[columns][rows];
+        this.chains = new ArrayList<>();
         this.movesLeft = new HashSet<>();
         for(int x = 0; x < 2*columns + 1; x++) {
             for(int y = (x + 1)%2; y < 2*rows + 1; y += 2) {

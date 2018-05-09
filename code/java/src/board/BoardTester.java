@@ -1,6 +1,58 @@
 package board;
 
+import java.util.Random;
+
 public class BoardTester {
+
+    public static void main(String[] args) {
+        BoardTester.verifyRandomGames(1, 189486484);
+    }
+
+    public static boolean verifyRandomGames(int amount, int seed) {
+
+        // Simulates random games consisting of legal moves and verifies invariants after every move
+        // If no violations are found, returns true
+        // If violations are found, prints information and returns false
+
+        Random rand = new Random(seed);
+
+        for(int game = 0; game < amount; game++) {
+
+            System.out.println("Started simulating game " + game);
+
+            // Initialization
+            int columns = rand.nextInt(6) + 5;
+            int rows = rand.nextInt(6) + 5;
+            Board board = new Board(columns, rows);
+            if (!BoardTester.verifyInvariants(board))
+                return false;
+
+            // Play random moves until none are left
+            while(board.movesLeft.size() > 0) {
+
+                System.out.println("Playing move, " + (board.movesLeft.size() - 1) + " moves left");
+
+                // Select random move
+                int i = 0;
+                int selectedEdgeIndex = rand.nextInt(board.movesLeft.size());
+                int[] selectedEdgeCoords = new int[] {-1, -1};
+                for(int edge : board.movesLeft) {
+                    if (i++ == selectedEdgeIndex) {
+                        selectedEdgeCoords = board.intToEdge(edge);
+                    }
+                }
+
+                // Play and verify
+                board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
+                if (!BoardTester.verifyInvariants(board))
+                    return false;
+            }
+
+        }
+
+        return true;
+
+    }
 
     public static boolean verifyInvariants(Board board) {
 
