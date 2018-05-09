@@ -9,7 +9,7 @@ public class AlphaBeta {
 
     public static int search(Board board) {
 
-        // Returns -1 (player 2 wins), 0 (tie) or 1 (player 1 wins) in best outcome for current player
+        // Returns -1 (player 1 wins), 0 (tie) or 1 (player 0 wins) in best outcome for current player
         boolean temp = board.recordUndo;
         board.recordUndo = true;
         int res = AlphaBeta.alphaBeta(board, Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -20,7 +20,7 @@ public class AlphaBeta {
 
     public static int alphaBeta(Board board, double alpha, double beta) {
 
-        // Returns -1 (player 2 wins), 0 (tie) or 1 (player 1 wins) in best outcome for current player
+        // Returns -1 (player 1 wins), 0 (tie) or 1 (player 0 wins) in best outcome for current player
 
         if (board.scores[0] > board.columns*board.rows/2) {
             return 1;
@@ -29,10 +29,10 @@ public class AlphaBeta {
             return -1;
         }
         if (board.getLegalMoves().size() == 0) {
-            return board.scores[1] - board.scores[2];
+            return (int) Math.signum(board.scores[0] - board.scores[1]);
         }
 
-        if (board.currentPlayer == 1) {
+        if (board.currentPlayer == 0) {
 
             // Maximizing player
             int value = Integer.MIN_VALUE;
