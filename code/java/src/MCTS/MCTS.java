@@ -1,4 +1,4 @@
-package MCTS3;
+package MCTS;
 
 import java.util.*;
 

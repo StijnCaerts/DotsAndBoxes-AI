@@ -1,8 +1,8 @@
-package MCTS3;
+package MCTS;
 
 import java.util.Objects;
 
-public class DBMove implements MCTS3.Move {
+public class DBMove implements Move {
     public final int x;
     public final int y;
 

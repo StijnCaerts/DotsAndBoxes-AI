@@ -2,7 +2,7 @@ package main;
 
 import java.net.InetSocketAddress;
 
-import MCTS3.MCTSAgent;
+import MCTS.MCTSAgent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.java_websocket.WebSocket;
