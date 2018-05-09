@@ -37,9 +37,9 @@ public class GameState2 extends Board {
     public double gameResult() {
         if(this.gameDecided()) {
             if(score[0] > score[1]) {
-                return 0;
+                return 0.0d;
             } else if (score[1] > score[0]) {
-                return 1;
+                return 1.0d;
             } else {
                 return 0.5;
             }
@@ -136,5 +136,10 @@ public class GameState2 extends Board {
             // switch players
             this.next_turn_player = (this.next_turn_player + 1) % 2;
         }
+    }
+
+    @Override
+    public int getNextTurnPlayer() {
+        return this.next_turn_player;
     }
 }

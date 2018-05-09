@@ -53,11 +53,11 @@ public class Node {
         return child;
     }
 
-    double getScore(double result) {
+    double getScore(double result, int player) {
         if(result == 0.5) {
             return result;
         }
-        if (this.board.next_turn_player == (int) result) {
+        if(player != (int) result) {
             return 0.0;
         } else {
             return 1.0;
