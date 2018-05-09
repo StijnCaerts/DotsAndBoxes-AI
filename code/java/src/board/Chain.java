@@ -37,9 +37,32 @@ public class Chain {
         this.size++;
     }
 
+    public void removeStart() {
+        removeIndex(0);
+    }
+
+    public void removeEnd() {
+        removeIndex(this.size - 1);
+    }
+
     public void removeIndex(int index) {
         this.boxes.remove(index);
         this.size--;
+    }
+
+    public void removeStartRange(int amount) {
+        removeRange(0, amount);
+    }
+
+    public void removeEndRange(int amount) {
+        removeRange(this.size - amount, this.size);
+    }
+
+    private void removeRange(int beginIndex, int endIndex) {
+        // Removes all boxes in the indicated range from this chain (endIndex is exclusive)
+        for(int i = endIndex - 1; i >= beginIndex; i--) {
+            removeIndex(i);
+        }
     }
 
 }

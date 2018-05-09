@@ -13,6 +13,7 @@ public class BoardTester {
     public static boolean verifyRandomGames(int amount, int minColumns, int maxColumns, int minRows, int maxRows, int seed) {
 
         // Simulates random games consisting of legal moves and verifies invariants after every move
+        // Also undoes all moves at the end and verifies the invariants after every undo
         // If no violations are found, returns true
         // If violations are found, prints information and returns false
 
@@ -20,21 +21,24 @@ public class BoardTester {
         Random rand = new Random(seed);
 
         double totalCopyTime = 0;
+        double totalUndoTime = 0;
         double totalMoveRegistrationTime = 0;
         double totalOptimalMovingUpdating = 0;
+        double totalHeuristicInputCalculationTime = 0;
         int totalMoves = 0;
+        int totalCopies = 0;
 
         for(int game = 0; game < amount; game++) {
 
             // Initialization
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
             int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
-            Board board = new Board(columns, rows);
+            Board board = new Board(columns, rows, false);
             if (!BoardTester.verifyInvariants(board))
                 return false;
 
             if (game%1000 == 0) {
-                System.out.println("Started simulating game " + game + " with " + columns + " columns and " + rows + " rows");
+                System.out.println("Started simulating game " + game);
             }
 
             // Play random moves until none are left
@@ -56,6 +60,7 @@ public class BoardTester {
                 try {
 
                     // Copy board
+                    totalCopies++;
                     long start = System.nanoTime();
                     oldBoard = board.deepcopy();
                     totalCopyTime += (System.nanoTime() - start)/1000000000.0;
@@ -70,6 +75,11 @@ public class BoardTester {
                     start = System.nanoTime();
                     board.updateOptimalMoves();
                     totalOptimalMovingUpdating += (System.nanoTime() - start)/1000000000.0;
+
+                    // Calculate heuristc input
+                    start = System.nanoTime();
+                    board.getHeuristicInput();
+                    totalHeuristicInputCalculationTime += (System.nanoTime() - start)/1000000000.0;
 
                     // Verify
                     if (!BoardTester.verifyInvariants(board))
@@ -87,12 +97,47 @@ public class BoardTester {
 
             }
 
+            // Undo all moves
+            if (board.recordUndo) {
+                while (board.canUndo()) {
+                    Board oldBoard = null;
+                    try {
+
+                        // Copy board
+                        totalCopies++;
+                        long start = System.nanoTime();
+                        oldBoard = board.deepcopy();
+                        totalCopyTime += (System.nanoTime() - start)/1000000000.0;
+
+                        // Undo move
+                        start = System.nanoTime();
+                        board.undo();
+                        totalUndoTime += (System.nanoTime() - start)/1000000000.0;
+
+                        // Verify
+                        if (!BoardTester.verifyInvariants(board))
+                            throw new RuntimeException("Invariants violated.");
+
+                    } catch (RuntimeException e) {
+                        System.out.println("Failed with " + board.legalMoves.size() + " moves undone!");
+                        e.printStackTrace();
+                        System.out.println("Old board:");
+                        System.out.println(oldBoard.edgesString());
+                        System.out.println("New board:");
+                        System.out.println(board.edgesString());
+                        return false;
+                    }
+                }
+            }
+
         }
 
         System.out.println("All games were verified successfully!");
-        System.out.println("Average board copy time: " + totalCopyTime/totalMoves);
+        System.out.println("Average board copy time: " + totalCopyTime/totalCopies);
+        System.out.println("Average undo time: " + totalUndoTime/totalMoves);
         System.out.println("Average move registration time (including optimal move updating): " + totalMoveRegistrationTime/totalMoves);
         System.out.println("Average optimal move updating time: " + totalOptimalMovingUpdating/totalMoves);
+        System.out.println("Average heuristic input calculation time: " + totalHeuristicInputCalculationTime/totalMoves);
         return true;
 
     }

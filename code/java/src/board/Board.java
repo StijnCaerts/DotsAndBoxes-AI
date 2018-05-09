@@ -15,8 +15,11 @@ public class Board {
     public static final int maxOpenChainSize = 10;
     public static final int maxLoopSize = 10;
 
-    public int columns, rows;
+    // General
+    public final int columns, rows;
+    public final boolean recordUndo;
     public int currentPlayer = 1;
+    int[] scores = new int[2];
 
     // Temporary variables used during calculations, doesn't store state across multiple moves
     public boolean boxClosed; // Whether or not a box was closed during this move
@@ -32,16 +35,17 @@ public class Board {
     public HashSet<Integer> legalMoves; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
     public int[] optimalMoves;
 
-    // ANN input
-    // We only keep track of open chain sizes since closed and half-open chains should be played by MCTS first (including half-hearted hand-outs)
-    int[] scores = new int[2];
+    // Undo
+    public Transaction currentTransaction;
+    public ArrayList<Transaction> undoStack;
 
     // Interface methods
 
-    public Board(int columns, int rows) {
+    public Board(int columns, int rows, boolean recordUndo) {
 
         this.columns = columns;
         this.rows = rows;
+        this.recordUndo = recordUndo;
 
         // Board representation initialization
         this.edges = new boolean[2*columns + 1][2*rows + 1];
@@ -56,14 +60,16 @@ public class Board {
         }
         this.optimalMoves = new int[0];
 
+        this.undoStack = new ArrayList<>();
+
     }
 
     public Board deepcopy() {
 
-        // Creates a deep copy of the important data of this board (including the board representation, but not variables used for temporary calculations)
+        // Creates a deep copy of the important data of this board (including the board representation, but not undo stack nor variables used for temporary calculations)
 
         // Copy rows, columns, current player and scores
-        Board newBoard = new Board(this.columns, this.rows);
+        Board newBoard = new Board(this.columns, this.rows, this.recordUndo);
         newBoard.currentPlayer = this.currentPlayer;
         newBoard.scores = new int[] {this.scores[0], this.scores[1]};
 
@@ -97,6 +103,16 @@ public class Board {
 
         return newBoard;
 
+    }
+
+    public boolean canUndo() {
+        return this.undoStack.size() > 0;
+    }
+
+    public void undo() {
+        // Undoes the last transaction on the undo stack
+        if (canUndo())
+            undoMove(this.undoStack.remove(this.undoStack.size() - 1));
     }
 
     public String edgesString() {
@@ -142,6 +158,11 @@ public class Board {
 
         // x, y are in the edge coordinate system (so in a grid of size (2*columns + 1)x(2*rows + 1))
 
+        // Record main part of move in transaction if necessary
+        if (this.recordUndo) {
+            this.currentTransaction = new Transaction(x, y, this.optimalMoves, this.currentPlayer, this.scores);
+        }
+
         // Update edge matrix
         this.edges[x][y] = true;
 
@@ -154,18 +175,18 @@ public class Board {
         if (x%2 == 0) {
             // Vertical edge, increase valence of left and right boxes
             if (x/2 - 1 >= 0) {
-                increaseValenceAndUpdate(x/2 - 1, y/2);
+                boxUpdate(x/2 - 1, y/2);
             }
             if (x/2 < this.columns) {
-                increaseValenceAndUpdate(x/2, y/2);
+                boxUpdate(x/2, y/2);
             }
         } else {
             // Horizontal edge, increase valence of top and bottom boxes
             if (y/2 - 1 >= 0) {
-                increaseValenceAndUpdate(x/2, y/2 - 1);
+                boxUpdate(x/2, y/2 - 1);
             }
             if (y/2 < this.rows) {
-                increaseValenceAndUpdate(x/2, y/2);
+                boxUpdate(x/2, y/2);
             }
         }
 
@@ -175,6 +196,11 @@ public class Board {
         // If during updating no boxes were closed, switch players
         if (!this.boxClosed)
             this.currentPlayer = this.currentPlayer%2 + 1;
+
+        // Push current transaction if necessary
+        if (this.recordUndo) {
+            this.undoStack.add(this.currentTransaction);
+        }
 
     }
 
@@ -192,7 +218,59 @@ public class Board {
         return this.legalMoves;
     }
 
+    public double[] getHeuristicInput() {
+        // Calculates heuristic input based on board representation
+        // Shouldn't be called more than once per move for efficiency
+        // Heuristic input consists of (in this order):
+        // - score of current player
+        // - score of other player
+        // - amount of open chains of size 1 to maxOpenChainSize (inclusive),
+        // - amount of loops of size 4 to maxLoopSize (inclusive)
+        double[] res = new double[2 + Board.maxOpenChainSize + Board.maxLoopSize - 3];
+        res[0] = this.scores[this.currentPlayer - 1];
+        res[1] = this.scores[this.currentPlayer%2];
+        for(Chain chain : this.chains) {
+            if (chain.type == ChainType.OPEN) {
+                res[1 + Math.min(Board.maxOpenChainSize, chain.size)]++;
+            } else if (chain.type == ChainType.LOOP) {
+                res[-2 + Board.maxOpenChainSize + Math.min(Board.maxLoopSize, chain.size)]++;
+            }
+        }
+        return res;
+    }
+
     // Helper methods
+
+    protected void undoMove(Transaction transaction) {
+
+        // Reverses the move described by this transaction
+
+        // Undo main part of move
+        int x = transaction.x;
+        int y = transaction.y;
+        this.edges[x][y] = false;
+        this.legalMoves.add(edgeToInt(x, y));
+        this.optimalMoves = transaction.optimalMoves;
+        this.currentPlayer = transaction.currentPlayer;
+        this.scores = transaction.scores;
+
+        // Undo box valence updates
+        for(int i = 0; i < transaction.boxesAmount; i++) {
+            this.valence[transaction.boxCoords[i][0]][transaction.boxCoords[i][1]]--;
+        }
+
+        // Undo box chain updates in reverse order
+        for(int i = transaction.subTransactions.size() - 1; i >= 0; i--) {
+            SubTransaction subTransaction = transaction.subTransactions.get(i);
+            subTransaction.undo();
+        }
+
+    }
+
+    protected void pushSubTransaction(SubTransaction subTransaction) {
+        // Should only be called when there is a current transaction
+        this.currentTransaction.subTransactions.add(subTransaction);
+    }
 
     protected void updateOptimalMoves() {
 
@@ -203,7 +281,6 @@ public class Board {
         // Note that the chain we keep should have enough space to create a hard-hearted handout (at least 4 boxes in closed chains, at least 2 in half-open chains)
 
         // Find chains to play or to keep for a later decision
-        Iterator<Chain> iter = this.chains.iterator();
         Chain validHalfOpenChain = null;
         Chain validClosedChain = null;
         Chain chainToPlay = null;
@@ -215,7 +292,7 @@ public class Board {
                 chainToPlay = chain;
                 break;
 
-            } else if (chain.type == ChainType.HALF_OPEN && chain.size == 2) {
+            } else if (chain.type == ChainType.HALF_OPEN) {
 
                 // Valid half-open chain
                 if (validHalfOpenChain == null) {
@@ -232,7 +309,7 @@ public class Board {
                     break;
                 }
 
-            } else if (chain.type == ChainType.CLOSED && chain.size != 4) {
+            } else if (chain.type == ChainType.CLOSED) {
 
                 // Valid closed chain
                 if (validHalfOpenChain == null && validClosedChain == null) {
@@ -295,12 +372,15 @@ public class Board {
 
     }
 
-    protected void increaseValenceAndUpdate(int x, int y) {
+    protected void boxUpdate(int x, int y) {
 
         // x and y are in the box coordinate system (so in a grid of size columns x rows)
 
         // Increase valence
         this.valence[x][y]++;
+        if (this.recordUndo) {
+            this.currentTransaction.boxCoords[this.currentTransaction.boxesAmount++] = new int[] {x, y};
+        }
 
         // Check if a box is made
         if (this.valence[x][y] == 4) {
@@ -349,6 +429,15 @@ public class Board {
                         chain = new Chain(box, ChainType.OPEN);
                         this.chains.add(chain);
                         this.chainAt[x][y] = chain;
+                        if (this.recordUndo) {
+                            pushSubTransaction(new SubTransaction() {
+                                @Override
+                                public void undo() {
+                                    chains.remove(chain);
+                                    chainAt[x][y] = null;
+                                }
+                            });
+                        }
                         break;
                     case 1:
                         // Box merges with end of existing chain, chain keeps type (open or half-open)
@@ -357,8 +446,26 @@ public class Board {
                         int neighborBox = boxToInt(x2, y2);
                         if (chain.size == 1 || chain.boxes.get(0) != neighborBox) {
                             chain.append(box);
+                            if (this.recordUndo) {
+                                pushSubTransaction(new SubTransaction() {
+                                    @Override
+                                    public void undo() {
+                                        chainAt[x][y] = null;
+                                        chain.removeEnd();
+                                    }
+                                });
+                            }
                         } else {
                             chain.prepend(box);
+                            if (this.recordUndo) {
+                                pushSubTransaction(new SubTransaction() {
+                                    @Override
+                                    public void undo() {
+                                        chainAt[x][y] = null;
+                                        chain.removeStart();
+                                    }
+                                });
+                            }
                         }
                         break;
                     case 2:
@@ -368,9 +475,20 @@ public class Board {
                         if (chain1 == chain2) {
                             // Chains on both sides are the same, so it becomes a loop
                             // Box can be added on either side
-                            chain1.type = ChainType.LOOP;
                             this.chainAt[x][y] = chain1;
+                            chain1.type = ChainType.LOOP;
                             chain1.append(box);
+                            if (this.recordUndo) {
+                                Chain finalChain1 = chain1;
+                                pushSubTransaction(new SubTransaction() {
+                                    @Override
+                                    public void undo() {
+                                        chainAt[x][y] = null;
+                                        finalChain1.type = ChainType.OPEN;
+                                        finalChain1.removeEnd();
+                                    }
+                                });
+                            }
                         } else {
 
                             // Chains on both sides are different, so it doesn't become a loop
@@ -381,7 +499,7 @@ public class Board {
                                 // Keep this chain and append the other one to it
 
                                 // Check if one of the chains is half-open, we will keep this one first
-                                if (chain1.type != ChainType.HALF_OPEN && chain2.type == ChainType.HALF_OPEN) {
+                                if (chain1.type != ChainType.HALF_OPEN) {
                                     Chain temp = chain1;
                                     chain1 = chain2;
                                     chain2 = temp;
@@ -389,14 +507,30 @@ public class Board {
                                 this.chainAt[x][y] = chain1;
                                 chain1.append(box);
 
+                                // Update chain 1 type
+                                if (chain2.type == ChainType.HALF_OPEN) {
+                                    chain1.type = ChainType.CLOSED;
+                                }
+
                                 // Check which side of chain connects to new box
                                 int[] chain2Start = intToBox(chain2.boxes.get(0));
                                 Board.appendChain(chain1, chain2, !((chain2Start[0] == x2 && chain2Start[1] == y2) || (chain2Start[0] == x3 && chain2Start[1] == y3)));
                                 markAndRemoveChain(chain2, chain1);
 
-                                // Update chain 1 type
-                                if (chain2.type == ChainType.HALF_OPEN) {
-                                    chain1.type = ChainType.CLOSED;
+                                if (this.recordUndo) {
+                                    // chain1 is always half-open at the start of this case
+                                    // chain2 is not changed, just removed from chains set, so can be stored to be re-added later
+                                    Chain finalChain1 = chain1;
+                                    Chain finalChain2 = chain2;
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chainAt[x][y] = null;
+                                            finalChain1.type = ChainType.HALF_OPEN;
+                                            finalChain1.removeEndRange(finalChain2.size + 1);
+                                            markAndAddChain(finalChain2);
+                                        }
+                                    });
                                 }
 
                             } else {
@@ -411,10 +545,39 @@ public class Board {
                                     chain1.prepend(box);
                                     int[] chain2Start = intToBox(chain2.boxes.get(0));
                                     Board.prependChain(chain1, chain2, !(chain2Start[0] == x3 && chain2Start[1] == y3));
+
+                                    if (this.recordUndo) {
+                                        // chain2 is not changed, just removed from chains set, so can be stored to be re-added later
+                                        Chain finalChain1 = chain1;
+                                        Chain finalChain2 = chain2;
+                                        pushSubTransaction(new SubTransaction() {
+                                            @Override
+                                            public void undo() {
+                                                chainAt[x][y] = null;
+                                                finalChain1.removeStartRange(finalChain2.size + 1);
+                                                markAndAddChain(finalChain2);
+                                            }
+                                        });
+                                    }
+
                                 } else {
                                     chain1.append(box);
                                     int[] chain2Start = intToBox(chain2.boxes.get(0));
                                     Board.appendChain(chain1, chain2, !(chain2Start[0] == x3 && chain2Start[1] == y3));
+
+                                    if (this.recordUndo) {
+                                        // chain2 is not changed, just removed from chains set, so can be stored to be re-added later
+                                        Chain finalChain1 = chain1;
+                                        Chain finalChain2 = chain2;
+                                        pushSubTransaction(new SubTransaction() {
+                                            @Override
+                                            public void undo() {
+                                                chainAt[x][y] = null;
+                                                finalChain1.removeEndRange(finalChain2.size + 1);
+                                                markAndAddChain(finalChain2);
+                                            }
+                                        });
+                                    }
                                 }
                                 markAndRemoveChain(chain2, chain1);
 
@@ -449,10 +612,27 @@ public class Board {
                         if (splitIndex == 0) {
                             // Split at start, just change chain type
                             chain.type = ChainType.HALF_OPEN;
+                            if (this.recordUndo) {
+                                pushSubTransaction(new SubTransaction() {
+                                    @Override
+                                    public void undo() {
+                                        chain.type = ChainType.OPEN;
+                                    }
+                                });
+                            }
                         } else if (splitIndex == chain.size) {
                             // Split at end, reverse box order and change chain type
                             Collections.reverse(chain.boxes);
                             chain.type = ChainType.HALF_OPEN;
+                            if (this.recordUndo) {
+                                pushSubTransaction(new SubTransaction() {
+                                    @Override
+                                    public void undo() {
+                                        Collections.reverse(chain.boxes);
+                                        chain.type = ChainType.OPEN;
+                                    }
+                                });
+                            }
                         } else {
                             if (!this.chainSplit) {
 
@@ -460,12 +640,24 @@ public class Board {
                                 // We keep first part in old chain and reverse it, while copying the second part to a new chain
 
                                 Chain newChain = new Chain(new ArrayList<>(chain.boxes.subList(splitIndex, chain.size)), ChainType.HALF_OPEN); // Copy second part to new chain
-                                markChain(newChain, newChain); // Mark boxes in second part as part of new chain
-                                this.chains.add(newChain);
+                                markAndAddChain(newChain);
                                 chain.boxes.subList(splitIndex, chain.size).clear(); // Remove second part from old chain
                                 Collections.reverse(chain.boxes); // Fix order in old chain
                                 chain.size = splitIndex; // Update old chain's size
                                 chain.type = ChainType.HALF_OPEN; // Fix old chain's type
+
+                                if (this.recordUndo) {
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chain.type = ChainType.OPEN;
+                                            chain.size += newChain.size;
+                                            Collections.reverse(chain.boxes);
+                                            chain.boxes.addAll(newChain.boxes);
+                                            markAndRemoveChain(newChain, chain);
+                                        }
+                                    });
+                                }
 
                                 this.chainSplit = true;
 
@@ -492,17 +684,31 @@ public class Board {
                         }
 
                         // Rotate boxes to make sure the list starts and ends with the right boxes
+                        int shift;
                         if (chain.boxes.get((index + 1)%chain.size) == neighborBox) {
                             // Same ordering
                             // Rotate list so that box is in front
-                            Collections.rotate(chain.boxes, -index);
+                            shift = -index;
+                            Collections.rotate(chain.boxes, shift);
                         } else {
                             // Reverse ordering
                             // Rotate list so that box is at the back
-                            Collections.rotate(chain.boxes, chain.size - 1 - index);
+                            shift = chain.size - 1 - index;
+                            Collections.rotate(chain.boxes, shift);
                         }
 
                         chain.type = ChainType.CLOSED;
+
+                        if (this.recordUndo) {
+                            pushSubTransaction(new SubTransaction() {
+                                @Override
+                                public void undo() {
+                                    chain.type = ChainType.LOOP;
+                                    Collections.rotate(chain.boxes, -shift);
+                                }
+                            });
+                        }
+
                         this.chainSplit = true;
 
                         break;
@@ -514,6 +720,14 @@ public class Board {
                             if (splitIndex == chain.size) {
                                 // Split at end, just change chain type
                                 chain.type = ChainType.CLOSED;
+                                if (this.recordUndo) {
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chain.type = ChainType.HALF_OPEN;
+                                        }
+                                    });
+                                }
                             } else if (splitIndex == 1) {
 
                                 // Split one box from start
@@ -521,6 +735,15 @@ public class Board {
                                 int[] removedBoxCoords = intToBox(chain.boxes.get(0));
                                 this.chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = null;
                                 chain.removeIndex(0);
+                                if (this.recordUndo) {
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chain.prepend(boxToInt(removedBoxCoords[0], removedBoxCoords[1]));
+                                            chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = chain;
+                                        }
+                                    });
+                                }
 
                             } else {
 
@@ -528,11 +751,22 @@ public class Board {
                                 // We keep first part in old chain, while copying the second part to a new chain
 
                                 Chain newChain = new Chain(new ArrayList<>(chain.boxes.subList(splitIndex, chain.size)), ChainType.HALF_OPEN); // Copy second part to new chain
-                                markChain(newChain, newChain); // Mark boxes in second part as part of new chain
-                                this.chains.add(newChain);
+                                markAndAddChain(newChain); // Mark boxes in second part as part of new chain
                                 chain.boxes.subList(splitIndex, chain.size).clear(); // Remove second part from old chain
                                 chain.size = splitIndex; // Update old chain's size
                                 chain.type = ChainType.CLOSED; // Fix old chain's type
+
+                                if (this.recordUndo) {
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chain.type = ChainType.HALF_OPEN;
+                                            chain.size += newChain.size;
+                                            chain.boxes.addAll(newChain.boxes);
+                                            markAndRemoveChain(newChain, chain);
+                                        }
+                                    });
+                                }
 
                             }
 
@@ -550,30 +784,61 @@ public class Board {
                             // Handle different split cases
                             splitIndex = findSplitIndex(chain, x, y, index);
                             if (splitIndex == 1) {
+
                                 // Split at start of chain
-                                if (chain.size == 2) {
-                                    // Remove full chain
-                                    markAndRemoveChain(chain, null);
-                                } else {
-                                    // Remove first box from chain
-                                    int[] removedBoxCoords = intToBox(chain.boxes.get(0));
-                                    this.chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = null;
-                                    chain.removeIndex(0);
+                                // Remove first box from chain
+                                int[] removedBoxCoords = intToBox(chain.boxes.get(0));
+                                this.chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = null;
+                                chain.removeIndex(0);
+
+                                if (this.recordUndo) {
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chain.prepend(boxToInt(removedBoxCoords[0], removedBoxCoords[1]));
+                                            chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = chain;
+                                        }
+                                    });
                                 }
+
                             } else if (splitIndex == chain.size - 1) {
-                                // Split at end but not start of chain
+
+                                // Split at end of chain
                                 // Remove last box from chain
                                 int[] removedBoxCoords = intToBox(chain.boxes.get(chain.size - 1));
                                 this.chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = null;
                                 chain.removeIndex(chain.size - 1);
+
+                                if (this.recordUndo) {
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chain.append(boxToInt(removedBoxCoords[0], removedBoxCoords[1]));
+                                            chainAt[removedBoxCoords[0]][removedBoxCoords[1]] = chain;
+                                        }
+                                    });
+                                }
+
                             } else {
+
                                 // Split somewhere in the middle
                                 // We keep first part in the old chain and create a new chain for the second part
                                 Chain newChain = new Chain(new ArrayList<>(chain.boxes.subList(splitIndex, chain.size)), ChainType.CLOSED); // Copy second part to new chain
-                                markChain(newChain, newChain); // Mark boxes in second part as part of new chain
-                                this.chains.add(newChain);
+                                markAndAddChain(newChain); // Mark boxes in second part as part of new chain
                                 chain.boxes.subList(splitIndex, chain.size).clear(); // Remove second part from old chain
                                 chain.size = splitIndex; // Update old chain's size
+
+                                if (this.recordUndo) {
+                                    pushSubTransaction(new SubTransaction() {
+                                        @Override
+                                        public void undo() {
+                                            chain.size += newChain.size;
+                                            chain.boxes.addAll(newChain.boxes);
+                                            markAndRemoveChain(newChain, chain);
+                                        }
+                                    });
+                                }
+
                             }
 
                             this.chainSplit = true;
@@ -601,6 +866,14 @@ public class Board {
                     if (chain.size == 1) {
                         // Half-open chain simply closed itself, so remove chain
                         markAndRemoveChain(chain, null);
+                        if (this.recordUndo) {
+                            pushSubTransaction(new SubTransaction() {
+                                @Override
+                                public void undo() {
+                                    markAndAddChain(chain);
+                                }
+                            });
+                        }
                     } else {
 
                         // Chain has at least size 2
@@ -618,6 +891,14 @@ public class Board {
                             // Neighbor box also has new valence 4, so we will need to perform an update ourselves
                             // Mark boxes and remove chain
                             markAndRemoveChain(chain, null);
+                            if (this.recordUndo) {
+                                pushSubTransaction(new SubTransaction() {
+                                    @Override
+                                    public void undo() {
+                                        markAndAddChain(chain);
+                                    }
+                                });
+                            }
                             this.chainSplit = true;
                         }
 
@@ -685,13 +966,20 @@ public class Board {
     }
 
     protected void markAndRemoveChain(Chain toBeMarked, Chain marker) {
-        // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the list of chains
+        // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the set of chains
         markChain(toBeMarked, marker);
         this.chains.remove(toBeMarked);
     }
 
+    protected void markAndAddChain(Chain toBeMarked) {
+        // Marks all boxes in toBeMarked as part of toBeMarked in the chainAt table and then adds toBeMarked to the set of chains
+        // Mostly used for undoing
+        markChain(toBeMarked, toBeMarked);
+        this.chains.add(toBeMarked);
+    }
+
     protected void markChain(Chain toBeMarked, Chain marker) {
-        // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the list of chains
+        // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the set of chains
         // marker can be null, toBeMarked cannot be null
         // Mark correct chain in chainAt table
         for(int i = 0; i < toBeMarked.size; i++) {
