@@ -6,7 +6,7 @@ public class BoardTester {
 
     public static void main(String[] args) {
 
-        BoardTester.verifyRandomGames(10000, 5, 10, 5, 10, 189486484);
+        BoardTester.verifyRandomGames(100000, 5, 10, 5, 10, 189486484);
 
     }
 
@@ -19,8 +19,10 @@ public class BoardTester {
         // We use set seed so we can reproduce any bugs we find easily
         Random rand = new Random(seed);
 
-        double totalAvgMoveRegistrationTime = 0;
-        double totalAvgCopyTime = 0;
+        double totalCopyTime = 0;
+        double totalMoveRegistrationTime = 0;
+        double totalOptimalMovingUpdating = 0;
+        int totalMoves = 0;
 
         for(int game = 0; game < amount; game++) {
 
@@ -30,20 +32,20 @@ public class BoardTester {
             Board board = new Board(columns, rows);
             if (!BoardTester.verifyInvariants(board))
                 return false;
-            double totalMoveRegistrationTime = 0;
-            double totalCopyTime = 0;
 
-            System.out.println("Started simulating game " + game + " with " + columns + " columns and " + rows + " rows");
+            if (game%1000 == 0) {
+                System.out.println("Started simulating game " + game + " with " + columns + " columns and " + rows + " rows");
+            }
 
             // Play random moves until none are left
-            while(board.movesLeft.size() > 0) {
+            while(board.legalMoves.size() > 0) {
 
 
                 // Select random move
                 int i = 0;
-                int selectedEdgeIndex = rand.nextInt(board.movesLeft.size());
+                int selectedEdgeIndex = rand.nextInt(board.legalMoves.size());
                 int[] selectedEdgeCoords = new int[] {-1, -1};
-                for(int edge : board.movesLeft) {
+                for(int edge : board.legalMoves) {
                     if (i++ == selectedEdgeIndex) {
                         selectedEdgeCoords = board.intToEdge(edge);
                     }
@@ -59,16 +61,22 @@ public class BoardTester {
                     totalCopyTime += (System.nanoTime() - start)/1000000000.0;
 
                     // Play move
+                    totalMoves++;
                     start = System.nanoTime();
                     board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
                     totalMoveRegistrationTime += (System.nanoTime() - start)/1000000000.0;
+
+                    // Update optimal moves
+                    start = System.nanoTime();
+                    board.updateOptimalMoves();
+                    totalOptimalMovingUpdating += (System.nanoTime() - start)/1000000000.0;
 
                     // Verify
                     if (!BoardTester.verifyInvariants(board))
                         throw new RuntimeException("Invariants violated.");
 
                 } catch (RuntimeException e) {
-                    System.out.println("Failed with " + board.movesLeft.size() + " moves left!");
+                    System.out.println("Failed with " + board.legalMoves.size() + " moves left!");
                     e.printStackTrace();
                     System.out.println("Old board:");
                     System.out.println(oldBoard.edgesString());
@@ -79,17 +87,12 @@ public class BoardTester {
 
             }
 
-            int moves = 2*rows*columns + rows + columns;
-            totalAvgMoveRegistrationTime += totalMoveRegistrationTime/moves;
-            totalAvgCopyTime += totalCopyTime/moves;
-            System.out.println("Average move registration time: " + totalMoveRegistrationTime/moves);
-            System.out.println("Average board copy time: " + totalCopyTime/moves);
-
         }
 
         System.out.println("All games were verified successfully!");
-        System.out.println("Global average move registration time: " + totalAvgMoveRegistrationTime/amount);
-        System.out.println("Global average board copy time: " + totalAvgCopyTime/amount);
+        System.out.println("Average board copy time: " + totalCopyTime/totalMoves);
+        System.out.println("Average move registration time (including optimal move updating): " + totalMoveRegistrationTime/totalMoves);
+        System.out.println("Average optimal move updating time: " + totalOptimalMovingUpdating/totalMoves);
         return true;
 
     }

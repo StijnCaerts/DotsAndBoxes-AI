@@ -1,9 +1,6 @@
 package board;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class Board {
 
@@ -30,11 +27,16 @@ public class Board {
     public int[][] valence; // Amount of lines next to box, starts at 0
     public Chain[][] chainAt; // Stores the chain each box belongs to, null for boxes with valence 0, 1, or 4, not null for all boxes with valence 2 or 3
     public HashSet<Chain> chains; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
-    public HashSet<Integer> movesLeft; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
+
+    // Moves
+    public HashSet<Integer> legalMoves; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
+    public int[] optimalMoves;
 
     // ANN input
     // We only keep track of open chain sizes since closed and half-open chains should be played by MCTS first (including half-hearted hand-outs)
     int[] scores = new int[2];
+
+    // Interface methods
 
     public Board(int columns, int rows) {
 
@@ -46,12 +48,13 @@ public class Board {
         this.valence = new int[columns][rows];
         this.chainAt = new Chain[columns][rows];
         this.chains = new HashSet<>();
-        this.movesLeft = new HashSet<>();
+        this.legalMoves = new HashSet<>();
         for(int x = 0; x < 2*columns + 1; x++) {
             for(int y = (x + 1)%2; y < 2*rows + 1; y += 2) {
-                this.movesLeft.add(edgeToInt(x, y));
+                this.legalMoves.add(edgeToInt(x, y));
             }
         }
+        this.optimalMoves = new int[0];
 
     }
 
@@ -87,8 +90,10 @@ public class Board {
             }
         }
 
-        // Copy moves left
-        newBoard.movesLeft = new HashSet<>(this.movesLeft);
+        // Copy moves
+        newBoard.legalMoves = new HashSet<>(this.legalMoves);
+        newBoard.optimalMoves = new int[this.optimalMoves.length];
+        System.arraycopy(this.optimalMoves, 0, newBoard.optimalMoves, 0, this.optimalMoves.length);
 
         return newBoard;
 
@@ -128,6 +133,11 @@ public class Board {
 
     }
 
+    public int[] intToEdge(int edge) {
+        // Converts an int ID to a edge
+        return new int[] {edge%(2*this.columns + 1), edge/(2*this.columns + 1)};
+    }
+
     public void registerMove(int x, int y) {
 
         // x, y are in the edge coordinate system (so in a grid of size (2*columns + 1)x(2*rows + 1))
@@ -135,8 +145,8 @@ public class Board {
         // Update edge matrix
         this.edges[x][y] = true;
 
-        // Update possible moves
-        this.movesLeft.remove(edgeToInt(x, y));
+        // Update legal moves
+        this.legalMoves.remove(edgeToInt(x, y));
 
         // Update valence matrix
         this.boxClosed = false;
@@ -159,13 +169,133 @@ public class Board {
             }
         }
 
+        // Update optimal moves
+        updateOptimalMoves();
+
         // If during updating no boxes were closed, switch players
         if (!this.boxClosed)
             this.currentPlayer = this.currentPlayer%2 + 1;
 
     }
 
-    public void increaseValenceAndUpdate(int x, int y) {
+    public boolean hasOptimalMoves() {
+        return this.optimalMoves.length > 0;
+    }
+
+    public int[] getOptimalMoves() {
+        // Returns the actual object, caller should take care of reference semantics
+        return this.optimalMoves;
+    }
+
+    public HashSet<Integer> getLegalMoves() {
+        // Returns the actual object, caller should take care of reference semantics
+        return this.legalMoves;
+    }
+
+    // Helper methods
+
+    protected void updateOptimalMoves() {
+
+        // Calculates zero to two optimal moves
+        // From https://www.aaai.org/ocs/index.php/AAAI/AAAI12/paper/viewFile/5126/5218:
+        // "In states with more than one chain, we can completely fill in all but one of the chains and follow the appropriate strategy for the last-remaining chain.
+        // In these cases, a half-open chain should be left for last, if possible, as this requires sacrificing only two boxes when leaving a hard-hearted handout."
+        // Note that the chain we keep should have enough space to create a hard-hearted handout (at least 4 boxes in closed chains, at least 2 in half-open chains)
+
+        // Find chains to play or to keep for a later decision
+        Iterator<Chain> iter = this.chains.iterator();
+        Chain validHalfOpenChain = null;
+        Chain validClosedChain = null;
+        Chain chainToPlay = null;
+        for(Chain chain : this.chains) {
+
+            if ((chain.type == ChainType.HALF_OPEN && chain.size != 2) || (chain.type == ChainType.CLOSED && chain.size != 4)) {
+
+                // Even if we play a box in this chain, it will remain a valid/invalid chain, so we don't have to choose yet
+                chainToPlay = chain;
+                break;
+
+            } else if (chain.type == ChainType.HALF_OPEN && chain.size == 2) {
+
+                // Valid half-open chain
+                if (validHalfOpenChain == null) {
+                    // Store as valid half-open chain
+                    validHalfOpenChain = chain;
+                    if (validClosedChain != null) {
+                        // We already found a valid closed chain and stored it, so mark the closed chain to be played and keep this one for later
+                        chainToPlay = validClosedChain;
+                        break;
+                    }
+                } else {
+                    // We already found another valid half-open chain, so we can play in this one
+                    chainToPlay = chain;
+                    break;
+                }
+
+            } else if (chain.type == ChainType.CLOSED && chain.size != 4) {
+
+                // Valid closed chain
+                if (validHalfOpenChain == null && validClosedChain == null) {
+                    // Store as valid closed chain only if no other candidates have been found yet, including half-open chains
+                    validClosedChain = chain;
+                } else {
+                    // We already have a valid candidate to keep for later, so play in this one
+                    chainToPlay = validClosedChain;
+                    break;
+                }
+
+            }
+        }
+
+        if (chainToPlay != null) {
+
+            // Play in this chain right away, no choice required
+            if (chainToPlay.size > 1) {
+                // Just play in between box 0 and 1
+                int[] boxCoords1 = intToBox(chainToPlay.boxes.get(0));
+                int[] boxCoords2 = intToBox(chainToPlay.boxes.get(1));
+                this.optimalMoves = new int[] {edgeToInt(boxCoords1[0] + boxCoords2[0] + 1, boxCoords1[1] + boxCoords2[1] + 1)};
+            } else {
+                // Chain is half-open and has size 1
+                int[] boxCoords = intToBox(chainToPlay.boxes.get(0));
+                for(int[] neighborDirection : Board.neighborDirections) {
+                    int x = 2*boxCoords[0] + 1 + neighborDirection[0];
+                    int y = 2*boxCoords[1] + 1 + neighborDirection[1];
+                    if (!this.edges[x][y]) {
+                        this.optimalMoves = new int[] {edgeToInt(x, y)};
+                        break;
+                    }
+                }
+            }
+
+        } else if (validHalfOpenChain != null || validClosedChain != null) {
+
+            // At most one valid chain was found, so play half-hearted hand-out
+            // Chain is either closed with size 4 or open with size 2
+            // In both cases, choose in between two open edges around second box
+
+            // Choose in between two open edges around second box
+            int[] boxCoords = intToBox((validHalfOpenChain != null ? validHalfOpenChain : validClosedChain).boxes.get(1));
+            this.optimalMoves = new int[2];
+            int i = 0;
+            for(int[] neighborDirection : Board.neighborDirections) {
+                int x = 2*boxCoords[0] + 1 + neighborDirection[0];
+                int y = 2*boxCoords[1] + 1 + neighborDirection[1];
+                if (!this.edges[x][y]) {
+                    this.optimalMoves[i++] = edgeToInt(x, y);
+                    if (i == 2)
+                        break;
+                }
+            }
+
+        } else {
+            // No valid chains or chains to play in were found, so there are no optimal moves
+            this.optimalMoves = new int[0];
+        }
+
+    }
+
+    protected void increaseValenceAndUpdate(int x, int y) {
 
         // x and y are in the box coordinate system (so in a grid of size columns x rows)
 
@@ -351,16 +481,12 @@ public class Board {
 
                         // Find neighboring connected box
                         int neighborBox = -1;
-                        x2 = -1;
-                        y2 = -1;
                         for(int[] neighborDirection : Board.neighborDirections) {
                             // Iterate through neighboring boxes
                             int nx = x + neighborDirection[0];
                             int ny = y + neighborDirection[1];
                             if (onBoard(nx, ny) && boxesConnected(x, y, nx, ny)) {
-                                x2 = nx;
-                                y2 = ny;
-                                neighborBox = boxToInt(x2, y2);
+                                neighborBox = boxToInt(nx, ny);
                                 break;
                             }
                         }
@@ -508,28 +634,28 @@ public class Board {
 
     }
 
-    public boolean onBoard(int x, int y) {
+    protected boolean onBoard(int x, int y) {
         // Checks if the given box coordinates are on the board
         return x >= 0 && x < this.columns && y >= 0 && y < this.rows;
     }
 
-    public static boolean boxesAdjacent(int x1, int y1, int x2, int y2) {
+    protected static boolean boxesAdjacent(int x1, int y1, int x2, int y2) {
         return Math.abs(x1 - x2) + Math.abs(y1 - y2) == 1;
     }
 
-    public boolean boxesConnected(int x1, int y1, int x2, int y2) {
+    protected boolean boxesConnected(int x1, int y1, int x2, int y2) {
         // Calculates whether or not these boxes don't have a line in between them
         // Should only be called for adjacent boxes
         // Because of the way the edge coordinate system works, the edge in between neighboring boxes is simply the average of the box coordinates converted to the edge coordinate system
         return !this.edges[x1 + x2 + 1][y1 + y2 + 1];
     }
 
-    public boolean boxesAdjacentAndConnected(int x1, int y1, int x2, int y2) {
+    protected boolean boxesAdjacentAndConnected(int x1, int y1, int x2, int y2) {
         // Assumes coordinates are actual box coordinates on this board, but don't need to be adjacent
         return Board.boxesAdjacent(x1, y1, x2, y2) && boxesConnected(x1, y1, x2, y2);
     }
 
-    public static void prependChain(Chain main, Chain add, boolean reverse) {
+    protected static void prependChain(Chain main, Chain add, boolean reverse) {
         // reverse indicates order in which boxes are prepended, not order in which they will end up in the main chain
         if (reverse) {
             // Add in reverse order
@@ -544,7 +670,7 @@ public class Board {
         }
     }
 
-    public static void appendChain(Chain main, Chain add, boolean reverse) {
+    protected static void appendChain(Chain main, Chain add, boolean reverse) {
         if (reverse) {
             // Add in reverse order
             for(int i = add.size - 1; i >= 0; i--) {
@@ -558,13 +684,13 @@ public class Board {
         }
     }
 
-    public void markAndRemoveChain(Chain toBeMarked, Chain marker) {
+    protected void markAndRemoveChain(Chain toBeMarked, Chain marker) {
         // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the list of chains
         markChain(toBeMarked, marker);
         this.chains.remove(toBeMarked);
     }
 
-    public void markChain(Chain toBeMarked, Chain marker) {
+    protected void markChain(Chain toBeMarked, Chain marker) {
         // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the list of chains
         // marker can be null, toBeMarked cannot be null
         // Mark correct chain in chainAt table
@@ -576,7 +702,7 @@ public class Board {
 
     }
 
-    public int findSplitIndex(Chain chain, int x, int y, int index) {
+    protected int findSplitIndex(Chain chain, int x, int y, int index) {
         // Look for split around box (with coordinates x and y) at index in chain
         // Chain type should still be its old type
         // Should not be used for loops
@@ -613,25 +739,20 @@ public class Board {
         return -1;
     }
 
-    public int boxToInt(int x, int y) {
+    protected int edgeToInt(int x, int y) {
+        // Converts a edge to an int ID
+        return y*(2*this.columns + 1) + x;
+    }
+
+    protected int boxToInt(int x, int y) {
         // Converts a box to an int ID
         // Used to store boxes as an ArrayList in the Chain class
         return y*this.columns + x;
     }
 
-    public int[] intToBox(int box) {
+    protected int[] intToBox(int box) {
         // Converts an int ID to a box
         return new int[] {box%this.columns, box/this.columns};
-    }
-
-    public int edgeToInt(int x, int y) {
-        // Converts a edge to an int ID
-        return y*(2*this.columns + 1) + x;
-    }
-
-    public int[] intToEdge(int edge) {
-        // Converts an int ID to a edge
-        return new int[] {edge%(2*this.columns + 1), edge/(2*this.columns + 1)};
     }
 
 }
