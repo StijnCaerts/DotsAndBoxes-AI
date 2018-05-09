@@ -39,7 +39,7 @@ public class MCTS {
 
             maxIterations--;
             if(maxIterations <= 0) {
-                throw new IllegalArgumentException("Game to deep to simulate with " + Integer.toString(maxIterations) + " iterations.");
+                throw new IllegalArgumentException("Game too deep to simulate with " + Integer.toString(maxIterations) + " iterations.");
             }
         }
         return b.gameResult();
@@ -52,7 +52,7 @@ public class MCTS {
     private void update(Node node, double result) {
         while(node != null) {
             node.plays++;
-            node.score += node.getScore(result);
+            node.score += node.getScore(result, this.rootNode.board.getNextTurnPlayer());
             node = node.parent;
         }
     }

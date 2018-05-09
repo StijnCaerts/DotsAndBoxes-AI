@@ -5,13 +5,13 @@ import java.util.Random;
 import java.util.Set;
 
 public abstract class Board {
-    int next_turn_player;
 
     public abstract double gameResult();
     public abstract Set<Move> getMoves();
     public abstract void playMove(Move move);
     public abstract Board duplicate();
     public abstract boolean gameDecided();
+    public abstract int getNextTurnPlayer();
 
     public Move getRandomMove() {
         if(!getMoves().isEmpty()) {

@@ -137,4 +137,9 @@ public class GameState2 extends Board {
             this.next_turn_player = (this.next_turn_player + 1) % 2;
         }
     }
+
+    @Override
+    public int getNextTurnPlayer() {
+        return this.next_turn_player;
+    }
 }
