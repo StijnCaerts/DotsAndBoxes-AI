@@ -18,7 +18,7 @@ public class Board {
     // General
     public final int columns, rows;
     public boolean recordUndo;
-    public int currentPlayer = 1;
+    public int currentPlayer = 0;
     public int[] scores = new int[2];
 
     // Temporary variables used during calculations, doesn't store state across multiple moves
@@ -195,7 +195,7 @@ public class Board {
 
         // If during updating no boxes were closed, switch players
         if (!this.boxClosed)
-            this.currentPlayer = this.currentPlayer%2 + 1;
+            this.currentPlayer = (this.currentPlayer + 1)%2;
 
         // Push current transaction if necessary
         if (this.recordUndo) {
@@ -227,8 +227,8 @@ public class Board {
         // - amount of open chains of size 1 to maxOpenChainSize (inclusive),
         // - amount of loops of size 4 to maxLoopSize (inclusive)
         double[] res = new double[2 + Board.maxOpenChainSize + Board.maxLoopSize - 3];
-        res[0] = this.scores[this.currentPlayer - 1];
-        res[1] = this.scores[this.currentPlayer%2];
+        res[0] = this.scores[this.currentPlayer];
+        res[1] = this.scores[(this.currentPlayer + 1)%2];
         for(Chain chain : this.chains) {
             if (chain.type == ChainType.OPEN) {
                 res[1 + Math.min(Board.maxOpenChainSize, chain.size)]++;
@@ -385,7 +385,7 @@ public class Board {
         // Check if a box is made
         if (this.valence[x][y] == 4) {
             this.boxClosed = true;
-            this.scores[this.currentPlayer - 1]++;
+            this.scores[this.currentPlayer]++;
         }
 
         // Update chains

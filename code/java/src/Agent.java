@@ -6,6 +6,7 @@ public abstract class Agent {
     public String gameId;
 
     public Agent(int player, double timeLimit, int rows, int columns, String gameId) {
+        // first player has index 0
         this.player = player;
         this.timeLimit = timeLimit;
         this.rows = rows;

@@ -45,7 +45,7 @@ public class Handler extends WebSocketServer {
             // Handle start message
 
             // Read variables
-            int player = jsonMessage.get("player").getAsInt();
+            int player = jsonMessage.get("player").getAsInt() - 1;
             double timeLimit = jsonMessage.get("timelimit").getAsDouble();
             JsonArray grid = jsonMessage.get("grid").getAsJsonArray();
             int rows = grid.get(0).getAsInt();
@@ -56,7 +56,7 @@ public class Handler extends WebSocketServer {
             this.agent = new MCTSAgent2(player, timeLimit, rows, columns, gameId);
 
             // If we are player 1, respond right away
-            if (this.agent.player == 1)
+            if (this.agent.player == 0)
                 replyMove(conn);
 
         } else if (type.equals("action")) {
@@ -64,7 +64,7 @@ public class Handler extends WebSocketServer {
             // Handle action message
 
             // Read variables
-            int nextPlayer = jsonMessage.get("nextplayer").getAsInt();
+            int nextPlayer = jsonMessage.get("nextplayer").getAsInt() - 1;
             JsonArray scores = jsonMessage.get("score").getAsJsonArray();
             int score1 = scores.get(0).getAsInt();
             int score2 = scores.get(1).getAsInt();
