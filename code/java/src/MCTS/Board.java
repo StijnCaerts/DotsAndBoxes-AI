@@ -1,8 +1,6 @@
 package MCTS;
 
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public interface Board {
 
@@ -12,6 +10,14 @@ public interface Board {
     public abstract Board duplicate();
     public abstract boolean gameDecided();
     public abstract int getNextTurnPlayer();
+
+    public default boolean hasOptimalMoves() {
+        return false;
+    }
+
+    public default Set<Move> getOptimal() {
+        return new HashSet<Move>();
+    }
 
     public default Move getRandomMove() {
         if(!getMoves().isEmpty()) {

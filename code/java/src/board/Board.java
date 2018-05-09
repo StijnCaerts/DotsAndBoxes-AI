@@ -1110,4 +1110,18 @@ public class Board implements MCTS.Board {
             return MCTS.Board.super.getRandomMove();
         }
     }
+
+    @Override
+    public Set<Move> getOptimal() {
+        Set<Move> optimalMoves = new HashSet<>();
+        if(this.hasOptimalMoves()) {
+            int[] oms = this.getOptimalMoves();
+            for(int i = 0; i < oms.length; i++) {
+                int[] om = intToEdge(oms[i]);
+                optimalMoves.add(new DBMove(om[0], om[1]));
+            }
+        }
+        return optimalMoves;
+    }
+
 }
