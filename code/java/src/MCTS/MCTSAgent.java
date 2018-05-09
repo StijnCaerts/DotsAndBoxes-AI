@@ -1,16 +1,17 @@
 package MCTS;
 
+import board.Board;
 import main.Agent;
 
 public class MCTSAgent extends Agent {
 
     public MCTS mcts;
-    GameState gs;
+
     public MCTSAgent(int player, double timeLimit, int rows, int columns, String gameId) {
         super(player, timeLimit, rows, columns, gameId);
         //this.gs = new MCTS.GameState(rows, columns);
         this.mcts = new MCTS();
-        this.mcts.init(new GameState(rows, columns));
+        this.mcts.init(new Board(columns, rows, false));
     }
 
     @Override

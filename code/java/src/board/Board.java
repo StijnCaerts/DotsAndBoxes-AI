@@ -1,8 +1,13 @@
 package board;
 
-import java.util.*;
+import MCTS.DBMove;
+import MCTS.Move;
+import exceptions.GameStateNotDecidedException;
 
-public class Board {
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class Board implements MCTS.Board {
 
     public static final int[][] neighborDirections = new int[][] {
             {1, 0},
@@ -1043,4 +1048,54 @@ public class Board {
         return new int[] {box%this.columns, box/this.columns};
     }
 
+    // Board interface methods
+
+    @Override
+    public double gameResult() {
+        if(this.gameDecided()) {
+            if(this.scores[0] > this.scores[1]) {
+                return 0.0d;
+            } else if (this.scores[1] > this.scores[0]) {
+                return 1.0d;
+            } else {
+                return 0.5d;
+            }
+        } else {
+            throw new GameStateNotDecidedException();
+        }
+    }
+
+    @Override
+    public boolean gameDecided() {
+        int total_points = this.rows * this.columns;
+        int half_points = total_points / 2;
+        if(this.scores[0] + this.scores[1] == total_points) return true;
+        if(this.scores[0] > half_points || this.scores[1] > half_points) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public Set<Move> getMoves() {
+        HashSet<Integer> lm = this.getLegalMoves();
+        return lm.stream().map(m -> {int[] e = intToEdge(m); return new DBMove(e[0], e[1]);}).collect(Collectors.toSet());
+    }
+
+    @Override
+    public MCTS.Board duplicate() {
+        return this.deepcopy();
+    }
+
+    @Override
+    public void playMove(Move move) {
+        DBMove dbm = (DBMove) move;
+        this.registerMove(dbm.x, dbm.y);
+    }
+
+    @Override
+    public int getNextTurnPlayer() {
+        return this.currentPlayer;
+    }
 }

@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class GameState extends Board {
+public class GameState implements Board {
 
     private int rows, cols;
     private int next_turn_player;

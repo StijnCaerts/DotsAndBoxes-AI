@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 
-public abstract class Board {
+public interface Board {
 
     public abstract double gameResult();
     public abstract Set<Move> getMoves();
@@ -13,7 +13,7 @@ public abstract class Board {
     public abstract boolean gameDecided();
     public abstract int getNextTurnPlayer();
 
-    public Move getRandomMove() {
+    public default Move getRandomMove() {
         if(!getMoves().isEmpty()) {
             Set<Move> moves = this.getMoves();
             ArrayList<Move> ms = new ArrayList<>(moves);
