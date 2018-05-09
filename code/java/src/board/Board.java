@@ -17,9 +17,9 @@ public class Board {
 
     // General
     public final int columns, rows;
-    public final boolean recordUndo;
+    public boolean recordUndo;
     public int currentPlayer = 1;
-    int[] scores = new int[2];
+    public int[] scores = new int[2];
 
     // Temporary variables used during calculations, doesn't store state across multiple moves
     public boolean boxClosed; // Whether or not a box was closed during this move

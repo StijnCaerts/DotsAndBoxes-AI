@@ -44,7 +44,6 @@ public class BoardTester {
             // Play random moves until none are left
             while(board.legalMoves.size() > 0) {
 
-
                 // Select random move
                 int i = 0;
                 int selectedEdgeIndex = rand.nextInt(board.legalMoves.size());
@@ -52,6 +51,7 @@ public class BoardTester {
                 for(int edge : board.legalMoves) {
                     if (i++ == selectedEdgeIndex) {
                         selectedEdgeCoords = board.intToEdge(edge);
+                        break;
                     }
                 }
 
