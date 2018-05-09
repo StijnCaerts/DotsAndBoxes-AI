@@ -29,8 +29,8 @@ public class Board {
     public boolean[][] edges; // false means no line has been drawn yet
     public int[][] valence; // Amount of lines next to box, starts at 0
     public Chain[][] chainAt; // Stores the chain each box belongs to, null for boxes with valence 0, 1, or 4, not null for all boxes with valence 2 or 3
-    public HashSet<Chain> chains;
-    public HashSet<Integer> movesLeft;
+    public HashSet<Chain> chains; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
+    public HashSet<Integer> movesLeft; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
 
     // ANN input
     // We only keep track of open chain sizes since closed and half-open chains should be played by MCTS first (including half-hearted hand-outs)

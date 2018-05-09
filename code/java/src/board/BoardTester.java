@@ -6,7 +6,7 @@ public class BoardTester {
 
     public static void main(String[] args) {
 
-        BoardTester.verifyRandomGames(100, 10, 100, 10, 100, 189486484);
+        BoardTester.verifyRandomGames(10000, 5, 10, 5, 10, 189486484);
 
     }
 
@@ -16,11 +16,13 @@ public class BoardTester {
         // If no violations are found, returns true
         // If violations are found, prints information and returns false
 
+        // We use set seed so we can reproduce any bugs we find easily
         Random rand = new Random(seed);
 
-        for(int game = 0; game < amount; game++) {
+        double totalAvgMoveRegistrationTime = 0;
+        double totalAvgCopyTime = 0;
 
-            System.out.println("Started simulating game " + game);
+        for(int game = 0; game < amount; game++) {
 
             // Initialization
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
@@ -28,6 +30,10 @@ public class BoardTester {
             Board board = new Board(columns, rows);
             if (!BoardTester.verifyInvariants(board))
                 return false;
+            double totalMoveRegistrationTime = 0;
+            double totalCopyTime = 0;
+
+            System.out.println("Started simulating game " + game + " with " + columns + " columns and " + rows + " rows");
 
             // Play random moves until none are left
             while(board.movesLeft.size() > 0) {
@@ -44,11 +50,23 @@ public class BoardTester {
                 }
 
                 // Play and verify
-                Board oldBoard = board.deepcopy();
+                Board oldBoard = null;
                 try {
+
+                    // Copy board
+                    long start = System.nanoTime();
+                    oldBoard = board.deepcopy();
+                    totalCopyTime += (System.nanoTime() - start)/1000000000.0;
+
+                    // Play move
+                    start = System.nanoTime();
                     board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
+                    totalMoveRegistrationTime += (System.nanoTime() - start)/1000000000.0;
+
+                    // Verify
                     if (!BoardTester.verifyInvariants(board))
                         throw new RuntimeException("Invariants violated.");
+
                 } catch (RuntimeException e) {
                     System.out.println("Failed with " + board.movesLeft.size() + " moves left!");
                     e.printStackTrace();
@@ -61,9 +79,17 @@ public class BoardTester {
 
             }
 
+            int moves = 2*rows*columns + rows + columns;
+            totalAvgMoveRegistrationTime += totalMoveRegistrationTime/moves;
+            totalAvgCopyTime += totalCopyTime/moves;
+            System.out.println("Average move registration time: " + totalMoveRegistrationTime/moves);
+            System.out.println("Average board copy time: " + totalCopyTime/moves);
+
         }
 
         System.out.println("All games were verified successfully!");
+        System.out.println("Global average move registration time: " + totalAvgMoveRegistrationTime/amount);
+        System.out.println("Global average board copy time: " + totalAvgCopyTime/amount);
         return true;
 
     }
