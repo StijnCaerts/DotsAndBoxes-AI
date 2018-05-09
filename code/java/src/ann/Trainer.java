@@ -2,9 +2,16 @@ package ann;
 
 import board.Board;
 import main.AlphaBeta;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class Trainer {
+
+    public static final String solvedGamesPath = "data/solvedGames";
 
     public void generateAndSave(int gamesAmount, int minColumns, int maxColumns, int minRows, int maxRows, double simulationRatio, int seed) {
 
@@ -18,15 +25,31 @@ public class Trainer {
             // Determine game parameters
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
             int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
-            int moves = (int) Math.round(simulationRatio*(2*columns*rows + columns + rows));
+            int movesAmount = (int) Math.round(simulationRatio*(2*columns*rows + columns + rows));
             int gameSeed = rand.nextInt();
 
             // Simulate game
-            System.out.println("Simulating game " + game + " with " + columns + " columns, " + rows + " rows, " + moves + " moves and seed " + seed);
-            simulateRandomGame(columns, rows, moves, gameSeed);
+            System.out.println("Simulating game " + game + " with " + columns + " columns, " + rows + " rows, " + movesAmount + " moves and seed " + seed);
+            Board board = simulateRandomGame(columns, rows, movesAmount, gameSeed);
 
+            // Solve game
             System.out.println("Solving");
-            AlphaBeta.AlphaBeta();
+            int res = AlphaBeta.search(board);
+
+            // Store game
+            try {
+                byte[] original = Files.readAllBytes(Paths.get(Trainer.solvedGamesPath));
+                ByteBuffer buffer = ByteBuffer.allocate(original.length + 5*4);
+                buffer.put(original);
+                buffer.putInt(columns);
+                buffer.putInt(rows);
+                buffer.putInt(movesAmount);
+                buffer.putInt(seed);
+                buffer.putInt(res);
+                Files.write(Paths.get(Trainer.solvedGamesPath + ".tmp"), buffer.array());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         }
 
