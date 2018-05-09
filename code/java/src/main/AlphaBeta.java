@@ -1,6 +1,6 @@
-import board.Board;
+package main;
 
-import java.util.Collection;
+import board.Board;
 
 public class AlphaBeta {
 
