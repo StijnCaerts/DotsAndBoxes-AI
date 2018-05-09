@@ -5,10 +5,12 @@ import java.util.Random;
 public class BoardTester {
 
     public static void main(String[] args) {
-        BoardTester.verifyRandomGames(1, 189486484);
+
+        BoardTester.verifyRandomGames(100, 10, 100, 10, 100, 189486484);
+
     }
 
-    public static boolean verifyRandomGames(int amount, int seed) {
+    public static boolean verifyRandomGames(int amount, int minColumns, int maxColumns, int minRows, int maxRows, int seed) {
 
         // Simulates random games consisting of legal moves and verifies invariants after every move
         // If no violations are found, returns true
@@ -21,8 +23,8 @@ public class BoardTester {
             System.out.println("Started simulating game " + game);
 
             // Initialization
-            int columns = rand.nextInt(6) + 5;
-            int rows = rand.nextInt(6) + 5;
+            int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
+            int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
             Board board = new Board(columns, rows);
             if (!BoardTester.verifyInvariants(board))
                 return false;
@@ -30,7 +32,6 @@ public class BoardTester {
             // Play random moves until none are left
             while(board.movesLeft.size() > 0) {
 
-                System.out.println("Playing move, " + (board.movesLeft.size() - 1) + " moves left");
 
                 // Select random move
                 int i = 0;
@@ -43,13 +44,26 @@ public class BoardTester {
                 }
 
                 // Play and verify
-                board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
-                if (!BoardTester.verifyInvariants(board))
+                Board oldBoard = board.deepcopy();
+                try {
+                    board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
+                    if (!BoardTester.verifyInvariants(board))
+                        throw new RuntimeException("Invariants violated.");
+                } catch (RuntimeException e) {
+                    System.out.println("Failed with " + board.movesLeft.size() + " moves left!");
+                    e.printStackTrace();
+                    System.out.println("Old board:");
+                    System.out.println(oldBoard.edgesString());
+                    System.out.println("New board:");
+                    System.out.println(board.edgesString());
                     return false;
+                }
+
             }
 
         }
 
+        System.out.println("All games were verified successfully!");
         return true;
 
     }
@@ -150,6 +164,7 @@ public class BoardTester {
                     if (!board.boxesAdjacentAndConnected(x1, y1, x2, y2)) {
                         System.out.println("Invariant violation: boxes at " + x1 + ", " + y1 + " and " + x2 + ", " + y2 + " are adjacent in chain " + chain
                                 + " but not actually adjacent and connected on board");
+                        return false;
                     }
                 }
 
@@ -172,13 +187,13 @@ public class BoardTester {
                     // Last box checks
                     if (chain.type != ChainType.CLOSED) {
                         if (board.valence[x1][y1] != 2) {
-                            System.out.println("Invariant violation: box at " + x1 + ", " + y1 + " is the first box in chain " + chain + " of type " + chain.type
+                            System.out.println("Invariant violation: box at " + x1 + ", " + y1 + " is the last box in chain " + chain + " of type " + chain.type
                                     + " but has valence " + board.valence[x1][y1]);
                             return false;
                         }
                     } else {
                         if (board.valence[x1][y1] != 3) {
-                            System.out.println("Invariant violation: box at " + x1 + ", " + y1 + " is the first box in chain " + chain + " of type " + chain.type
+                            System.out.println("Invariant violation: box at " + x1 + ", " + y1 + " is the last box in chain " + chain + " of type " + chain.type
                                     + " but has valence " + board.valence[x1][y1]);
                             return false;
                         }
@@ -220,7 +235,8 @@ public class BoardTester {
                         for (int[] neighborDirection : Board.neighborDirections) {
                             int nx = x + neighborDirection[0];
                             int ny = y + neighborDirection[1];
-                            if (nx >= 0 && nx < board.columns && ny >= 0 && ny < board.rows && board.boxesConnected(x, y, nx, ny) && board.chainAt[nx][ny] == null) {
+                            // Neighbor can be off-board, boxesConnected will simply take the edge in between
+                            if (board.boxesConnected(x, y, nx, ny) && (!board.onBoard(nx, ny) || board.chainAt[nx][ny] == null)) {
                                 found = true;
                                 break;
                             }
@@ -231,6 +247,8 @@ public class BoardTester {
                             return false;
                         }
                     }
+                    if (chain.size == 1)
+                        break;
                 }
 
                 if (chain.type == ChainType.CLOSED) {

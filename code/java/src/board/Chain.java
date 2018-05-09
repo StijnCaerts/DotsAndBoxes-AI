@@ -37,4 +37,9 @@ public class Chain {
         this.size++;
     }
 
+    public void removeIndex(int index) {
+        this.boxes.remove(index);
+        this.size--;
+    }
+
 }
