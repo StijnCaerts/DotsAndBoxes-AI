@@ -24,7 +24,11 @@ public class Node {
         this.parent = parent;
         this.move = move;
 
-        this.pendingMoves = new ArrayList<>(board.getMoves());
+        if(this.board.hasOptimalMoves()) {
+            this.pendingMoves = new ArrayList<>(board.getOptimal());
+        } else {
+            this.pendingMoves = new ArrayList<>(board.getMoves());
+        }
         this.children = new ArrayList<>();
     }
 
