@@ -68,8 +68,8 @@ public class Handler extends WebSocketServer {
             JsonArray scores = jsonMessage.get("score").getAsJsonArray();
             int score1 = scores.get(0).getAsInt();
             int score2 = scores.get(1).getAsInt();
-            int ownScore = scores.get(this.agent.player - 1).getAsInt();
-            int opponentScore = scores.get(this.agent.player%2).getAsInt();
+            int ownScore = scores.get(this.agent.player).getAsInt();
+            int opponentScore = scores.get((this.agent.player + 1)%2).getAsInt();
             JsonArray location = jsonMessage.get("location").getAsJsonArray();
             String orientation = jsonMessage.get("orientation").getAsString();
             int x = 2*location.get(1).getAsInt() + (orientation.equals("h") ? 1 : 0);

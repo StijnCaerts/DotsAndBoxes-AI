@@ -22,6 +22,12 @@ public class AlphaBeta {
 
         // Returns -1 (player 2 wins), 0 (tie) or 1 (player 1 wins) in best outcome for current player
 
+        if (board.scores[0] > board.columns*board.rows/2) {
+            return 1;
+        }
+        if (board.scores[1] > board.columns*board.rows/2) {
+            return -1;
+        }
         if (board.getLegalMoves().size() == 0) {
             return board.scores[1] - board.scores[2];
         }

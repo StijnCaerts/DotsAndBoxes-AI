@@ -4,7 +4,27 @@ import board.Board;
 
 import java.util.Random;
 
-public class Generator {
+public class Trainer {
+
+    public void generateAndSave(int amount, int minColumns, int maxColumns, int minRows, int maxRows, double simulationRatio, int seed) {
+
+        // Generates games, solves them and stores their results in a file
+
+        Random rand = new Random(seed);
+
+        for(int game = 0; game < amount; game++) {
+
+            // Determine game parameters
+            int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
+            int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
+
+            System.out.println("Simulating game " + game);
+
+            System.out.println("Solving");
+
+        }
+
+    }
 
     public Board simulateRandomGame(int columns, int rows, int amount, int seed) {
 
