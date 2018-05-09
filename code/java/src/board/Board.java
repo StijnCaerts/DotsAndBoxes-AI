@@ -1098,4 +1098,16 @@ public class Board implements MCTS.Board {
     public int getNextTurnPlayer() {
         return this.currentPlayer;
     }
+
+    @Override
+    public Move getRandomMove() {
+        if(this.hasOptimalMoves()) {
+            int[] oms = this.getOptimalMoves();
+            int i = new Random().nextInt(oms.length);
+            int[] om = this.intToEdge(oms[i]);
+            return new DBMove(om[0], om[1]);
+        } else {
+            return MCTS.Board.super.getRandomMove();
+        }
+    }
 }
