@@ -1079,6 +1079,7 @@ public class Board implements MCTS.Board {
 
     @Override
     public Set<Move> getMoves() {
+        //TODO: We should make this more efficient, not feasible to create new object for every possible move at every node
         HashSet<Integer> lm = this.getLegalMoves();
         return lm.stream().map(m -> {int[] e = intToEdge(m); return new DBMove(e[0], e[1]);}).collect(Collectors.toSet());
     }
