@@ -21,7 +21,7 @@ public class Trainer {
     public static void generateAndSave(int gamesAmount, int minColumns, int maxColumns, int minRows, int maxRows, double simulationRatio, int seed) {
 
         // Generates games, solves them and stores their results in a file
-        // simulationRatio determines roughly what ratio of edges should be filled in in an example
+        // simulationRatio determines roughly what ratio of edges should be filled in in an example (before filling in chains)
 
         Random rand = new Random(seed);
 
@@ -36,6 +36,8 @@ public class Trainer {
             // Simulate game
             System.out.println("Simulating game " + game + " with " + columns + " columns, " + rows + " rows, " + movesAmount + " moves and seed " + seed);
             Board board = Trainer.simulateRandomGame(columns, rows, movesAmount, gameSeed);
+
+            //TODO: First let players fill up all closed chains etc., wait until hasOptimalMoves is false
 
             // Solve game
             System.out.println("Solving");
@@ -56,6 +58,8 @@ public class Trainer {
                 buffer.putInt(movesAmount);
                 buffer.putInt(seed);
                 buffer.putInt(res);
+
+                // We create a separate file and rename it because of atomicity
                 Files.write(Paths.get(Trainer.solvedGamesPath + ".tmp"), buffer.array());
                 (new File(Trainer.solvedGamesPath + ".tmp")).renameTo(new File(Trainer.solvedGamesPath));
             } catch (IOException e) {
