@@ -9,17 +9,20 @@ public class MCTSAgent2 extends Agent {
         super(player, timeLimit, rows, columns, gameId);
         this.gs = new GameState2(rows, columns);
         this.mcts = new MCTS();
+        //this.mcts.init(new GameState2(rows, columns));
     }
 
     @Override
     public void registerAction(int ownScore, int opponentScore, int x, int y) {
         this.gs.playMove(new DBMove(x,y));
+        // this.mcts.registerMove(new DBMove(x,y));
     }
 
     @Override
     public int[] getNextMove() {
         try {
             Move m = mcts.getNextMove(this.gs, this.timeLimit);
+            //Move m = mcts.getNextMove(this.timeLimit);
             DBMove dbm = (DBMove) m;
             return new int[]{dbm.x, dbm.y};
         } catch (NullPointerException e) {
