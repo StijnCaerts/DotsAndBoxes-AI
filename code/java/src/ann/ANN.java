@@ -1,18 +1,31 @@
 package ann;
 
+import board.Board;
 import math.Matrix;
 import math.Vector;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public class ANN {
 
-    // Implements a 2-layer ann.ANN
+    // Implements a 2-layer ANN
 
     public static final double initSigma = 0.02;
     public static final double relStopMargin = 0.01;
     public static int maxIterations = 1000000;
-    public static double stepSize = 0.1;
+    public static double stepSize = 0.01;
     public Matrix hiddenWeights, outputWeights; // outputWeights are stored as a row matrix
 
     public static void main(String[] args) {
@@ -22,6 +35,74 @@ public class ANN {
     public ANN(int inputSize, int hiddenSize) {
         this.hiddenWeights = Matrix.createRandNorm(inputSize, hiddenSize, 0, ANN.initSigma);
         this.outputWeights = Matrix.createRandNorm(hiddenSize, 1, 0, ANN.initSigma);
+    }
+
+    // Saving/loading
+
+    public void save(String path) {
+
+        // Saves this ANN to the given path
+
+        int inputSize = this.hiddenWeights.width;
+        int hiddenSize = this.hiddenWeights.height;
+        ByteBuffer buffer = ByteBuffer.allocate(2*4 + 8*inputSize*hiddenSize + 8*hiddenSize);
+        buffer.putInt(inputSize);
+        buffer.putInt(hiddenSize);
+
+        // Write hidden weights
+        for(int x = 0; x < inputSize; x++) {
+            for(int y = 0; y < hiddenSize; y++) {
+                buffer.putDouble(this.hiddenWeights.values[x][y]);
+            }
+        }
+
+        // Write output weights
+        for(int x = 0; x < hiddenSize; x++) {
+            buffer.putDouble(this.outputWeights.values[x][0]);
+        }
+
+        try {
+            Files.write(Paths.get(path), buffer.array());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static ANN load(String path) {
+
+        // Loads an ANN from the given path
+
+        ANN ann = null;
+        try {
+
+            byte[] bytes = Files.readAllBytes(Paths.get(path));
+            ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+            buffer.put(bytes);
+            buffer.rewind();
+            int inputSize = buffer.getInt();
+            int hiddenSize = buffer.getInt();
+            ann = new ANN(inputSize, hiddenSize);
+
+            // Read hidden weights
+            for(int x = 0; x < inputSize; x++) {
+                for(int y = 0; y < hiddenSize; y++) {
+                    buffer.putDouble(ann.hiddenWeights.values[x][y]);
+                }
+            }
+
+            // Read output weights
+            for(int x = 0; x < hiddenSize; x++) {
+                buffer.putDouble(ann.outputWeights.values[x][0]);
+            }
+
+        } catch (NoSuchFileException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return ann;
+
     }
 
     // Helper methods
@@ -47,7 +128,7 @@ public class ANN {
         return Math.sqrt(Math.pow(a.frobNorm(), 2) + Math.pow(b.frobNorm(), 2));
     }
 
-    // ann.ANN methods
+    // ANN methods
 
     public double predict(Vector input) {
 
@@ -59,28 +140,105 @@ public class ANN {
 
     }
 
-    public void train(Example[] examples) {
+    public void train(Example[] trainingSet, Example[] validationSet, String annBasePath, String annPerformancePath) {
 
         // Trains this ann.ANN on the given array of examples
         // input vectors will always be normalized in this call
 
+        // if validationSet, annBasePath and annPerformancePath are non-zero, accuracy on training and validation set will be measured and saved every round along with the current state
+
         long start = System.nanoTime();
 
         // Input normalization
-        for(Example example : examples) {
+        for(Example example : trainingSet) {
             example.input.normalize();
+        }
+
+        if (validationSet != null) {
+            // Clear performance measurements
+            (new File(annPerformancePath)).delete();
         }
 
         // Pass over all examples until weights have converged enough
         int iteration = 0;
+        int round = 0;
+        double lastSave = 0;
         while(true) {
 
-            // Store old weights to check for convergence later
-            Matrix prevHiddenWeights = this.hiddenWeights.deepcopy();
-            Matrix prevOutputWeights = this.outputWeights.deepcopy();
+            Matrix prevHiddenWeights = null, prevOutputWeights = null;
+            if (validationSet != null) {
+
+                // Test and report performance
+
+                double trainingRMSE = ANN.RMSE(this, trainingSet);
+                double validationRMSE = ANN.RMSE(this, validationSet);
+                double trainingAccuracy = ANN.accuracy(this, trainingSet);
+                double validationAccuracy = ANN.accuracy(this, validationSet);
+
+                // Save current ANN periodically
+                if (System.nanoTime()/1000000000.0 > lastSave + 1) {
+                    System.out.println("Results after round " + round + ":");
+                    System.out.println("Training set RMSE: " + trainingRMSE);
+                    System.out.println("Validation set RMSE: " + validationRMSE);
+                    System.out.println("Training set accuracy: " + trainingAccuracy);
+                    System.out.println("Validation set accuracy: " + validationAccuracy);
+                    save(annBasePath + round);
+                    lastSave = System.nanoTime()/1000000000.0;
+
+                    System.out.println("Hidden weights");
+                    for(int x = 0; x < this.hiddenWeights.width; x++) {
+                        System.out.println((new Vector(this.hiddenWeights.values[x])).norm() + " " + Arrays.toString(this.hiddenWeights.values[x]));
+                    }
+                    System.out.println("Output weights");
+                    System.out.println("[");
+                    for(int x = 0; x < this.outputWeights.width; x++) {
+                        System.out.print(this.outputWeights.values[x][0] + ", ");
+                    }
+                    System.out.println("]\n");
+                }
+
+                // Save accuracies
+
+                // Calculate output
+                String output = null;
+                try {
+                    // Read file
+                    List<String> lines = Files.readAllLines(Paths.get(annPerformancePath));
+                    output = lines.get(0) + ", " + trainingRMSE + "\n" + lines.get(1) + ", " + validationRMSE
+                            + "\n" + lines.get(2) + ", " + trainingAccuracy + "\n" + lines.get(3) + ", " + validationAccuracy;
+                } catch (NoSuchFileException e) {
+                    output = "trainingRMSE = " + trainingRMSE + "\nvalidationRMSE = " + validationRMSE
+                            + "\ntrainingAccuracy = " + trainingAccuracy + "\nvalidationAccuracy = " + validationAccuracy;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+
+                // Save output
+                BufferedWriter writer = null;
+                try {
+                    writer = new BufferedWriter(new FileWriter(new File(annPerformancePath + ".tmp")));
+                    writer.write(output);
+                    (new File(annPerformancePath + ".tmp")).renameTo(new File(annPerformancePath));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            } else {
+                // Store old weights to check for convergence later
+                prevHiddenWeights = this.hiddenWeights.deepcopy();
+                prevOutputWeights = this.outputWeights.deepcopy();
+            }
+
 
             // Go through all examples
-            for(Example example : examples) {
+            for(Example example : trainingSet) {
 
                 // Calculate outputs
                 Vector hiddenInput = this.hiddenWeights.multiply(example.input);
@@ -97,33 +255,41 @@ public class ANN {
                 for(int i = 0; i < this.outputWeights.width; i++)
                     this.outputWeights.values[i][0] += ANN.stepSize*predictionError*hiddenOutput.values[i];
 
-                // Backpropagate requested hidden change to adjust hidden weights
+                // Back-propagate requested hidden change to adjust hidden weights
                 for(int i = 0; i < this.hiddenWeights.width; i++) {
                     for(int j = 0; j < this.hiddenWeights.height; j++) {
                         this.hiddenWeights.values[i][j] += ANN.stepSize*requestedHiddenChange.values[j][0]*ANN.dactivation(hiddenInput.values[j])*example.input.values[i];
                     }
                 }
 
-                // Check stop criteria
-                iteration++;
-                if (iteration >= ANN.maxIterations)
-                    break;
+                if (validationSet == null) {
+                    // Check stop criteria
+                    iteration++;
+                    if (iteration >= ANN.maxIterations)
+                        break;
+                }
 
             }
 
-            // Check stop criteria
-            if (iteration >= ANN.maxIterations)
-                break;
-            // Convergence check
-            double diff = ANN.frobNorm(prevHiddenWeights.multiply(-1).add(this.hiddenWeights), prevOutputWeights.multiply(-1).add(this.outputWeights));
-            double base = ANN.frobNorm(this.hiddenWeights, this.outputWeights);
-            //if (base >= math.CustomMath.epsilon && diff/base < ann.ANN.relStopMargin)
-            //    break;
+            if (validationSet == null) {
+                // Check stop criteria
+                if (iteration >= ANN.maxIterations)
+                    break;
+                // Convergence check
+                double diff = ANN.frobNorm(prevHiddenWeights.multiply(-1).add(this.hiddenWeights), prevOutputWeights.multiply(-1).add(this.outputWeights));
+                double base = ANN.frobNorm(this.hiddenWeights, this.outputWeights);
+                if (base >= math.CustomMath.epsilon && diff / base < ann.ANN.relStopMargin)
+                    break;
+            }
+
+            round++;
 
         }
 
-        System.out.println((System.nanoTime() - start)/1000000000.0);
-        System.out.println("Stopped training after " + iteration + " iterations.");
+        if (validationSet == null) {
+            System.out.println((System.nanoTime() - start)/1000000000.0);
+            System.out.println("Stopped training after " + iteration + " iterations.");
+        }
 
     }
 
@@ -145,7 +311,7 @@ public class ANN {
 
         // Print initial analysis, then train, then print new analysis
         ANN.printRMSEs(model, trainingSet, validationSet);
-        model.train(trainingSet);
+        model.train(trainingSet, null,  null,null);
         ANN.printRMSEs(model, trainingSet, validationSet);
 
     }
@@ -182,6 +348,19 @@ public class ANN {
             total += Math.pow(example.output - ann.predict(example.input), 2);
         }
         return Math.sqrt(total/examples.length);
+
+    }
+
+    public static double accuracy(ANN ann, Example[] examples) {
+
+        // Checks if ANN predicts right sign
+        double total = 0;
+        for(Example example : examples) {
+            if (ann.predict(example.input)*example.output > 0) {
+                total++;
+            }
+        }
+        return total/examples.length;
 
     }
 

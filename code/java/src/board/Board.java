@@ -3,9 +3,9 @@ package board;
 import MCTS.DBMove;
 import MCTS.Move;
 import exceptions.GameStateNotDecidedException;
+import math.Vector;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Board implements MCTS.Board {
 
@@ -16,9 +16,9 @@ public class Board implements MCTS.Board {
             {0, 1},
     };
 
-    // These don't actually limit chains on the board, just how they are presented to the ANN
-    public static final int maxOpenChainSize = 10;
-    public static final int maxLoopSize = 10;
+    // These don't actually limit chains on the board, just how they are presented to the heuristic
+    public static final int maxOpenChainSize = 8;
+    public static final int maxLoopSize = 4;
 
     // General
     public final int columns, rows;
@@ -254,7 +254,7 @@ public class Board implements MCTS.Board {
         return null;
     }
 
-    public double[] getHeuristicInput() {
+    public math.Vector getHeuristicInput() {
         // Calculates heuristic input based on board representation
         // Shouldn't be called more than once per move for efficiency
         // Heuristic input consists of (in this order):
@@ -272,7 +272,7 @@ public class Board implements MCTS.Board {
                 res[-2 + Board.maxOpenChainSize + Math.min(Board.maxLoopSize, chain.size)]++;
             }
         }
-        return res;
+        return new Vector(res);
     }
 
     // Helper methods

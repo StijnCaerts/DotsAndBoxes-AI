@@ -14,7 +14,7 @@ public class AlphaBeta {
         boolean temp = board.recordUndo;
         board.recordUndo = true;
         int[] killerMoves = new int[board.movesLeft];
-        int res = AlphaBeta.alphaBeta(board, killerMoves, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+        int res = AlphaBeta.alphaBeta(board, killerMoves, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
         board.recordUndo = temp;
         return res;
 

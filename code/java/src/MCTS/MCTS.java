@@ -79,9 +79,6 @@ public class MCTS {
             newRoot = new Node(newBoard);
         }
         this.rootNode = newRoot;
-        System.out.println(((board.Board) newRoot.board).edgesString());
-        System.out.println(((board.Board) newRoot.board).scores[0]);
-        System.out.println(((board.Board) newRoot.board).scores[1]);
     }
 
     public Move getNextMove(double timeAllowed) {

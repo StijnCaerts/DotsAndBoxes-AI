@@ -4,7 +4,7 @@ import math.Vector;
 
 public class Example {
 
-    // ann.Example for ann.ANN
+    // Example for ANN
     // Just a value class
 
     public Vector input;
