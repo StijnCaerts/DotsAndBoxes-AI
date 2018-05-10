@@ -17,7 +17,7 @@ public class Trainer {
     public static final String solvedGamesPath = "data/solvedGames";
 
     public static void main(String args[]) {
-        Trainer.generateAndSave(100, 5, 5, 5, 5, 0.6);
+        Trainer.generateAndSave(1000, 5, 5, 5, 5, 0.65);
     }
 
     public static void generateAndSave(int gamesAmount, int minColumns, int maxColumns, int minRows, int maxRows, double simulationRatio) {
