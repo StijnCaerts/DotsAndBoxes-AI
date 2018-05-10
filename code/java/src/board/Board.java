@@ -161,6 +161,11 @@ public class Board implements MCTS.Board {
         return new int[] {edge%(2*this.columns + 1), edge/(2*this.columns + 1)};
     }
 
+    public int edgeToInt(int x, int y) {
+        // Converts a edge to an int ID
+        return y*(2*this.columns + 1) + x;
+    }
+
     public void registerMove(int x, int y) {
 
         // x, y are in the edge coordinate system (so in a grid of size (2*columns + 1)x(2*rows + 1))
@@ -221,27 +226,9 @@ public class Board implements MCTS.Board {
         return this.optimalMoves;
     }
 
-    public ArrayList<Integer> getLegalMoves() {
-        // Creates an ArrayList of all currently legal moves
-        // Inefficient, try to iterate elsewhere instead (interface method which returns iterator may be perfect)
-        //TODO
-        ArrayList<Integer> legalMoves = new ArrayList<>();
-        for (int x = 0; x < 2 * this.columns + 1; x++) {
-            if (legalMoves.size() == this.movesLeft)
-                break;
-            if (this.movesLeftPerColumn[x] == 0)
-                continue;
-            int movesFound = 0;
-            for (int y = (x + 1) % 2; y < 2 * this.rows + 1; y += 2) {
-                if (!this.edges[x][y]) {
-                    legalMoves.add(edgeToInt(x, y));
-                    movesFound++;
-                    if (movesFound == this.movesLeftPerColumn[x])
-                        break;
-                }
-            }
-        }
-        return legalMoves;
+    public MoveIterator getLegalMoveIterator() {
+        // Returns a new legal move iterator for this board
+        return new MoveIterator(this);
     }
 
     public int[] getRandomLegalMove(Random rand) {
@@ -1076,11 +1063,6 @@ public class Board implements MCTS.Board {
         return -1;
     }
 
-    protected int edgeToInt(int x, int y) {
-        // Converts a edge to an int ID
-        return y*(2*this.columns + 1) + x;
-    }
-
     protected int boxToInt(int x, int y) {
         // Converts a box to an int ID
         // Used to store boxes as an ArrayList in the Chain class
@@ -1124,8 +1106,12 @@ public class Board implements MCTS.Board {
     @Override
     public Set<Move> getMoves() {
         //TODO: We should make this more efficient, not feasible to create new object for every possible move at every node
-        ArrayList<Integer> lm = this.getLegalMoves();
-        return lm.stream().map(m -> {int[] e = intToEdge(m); return new DBMove(e[0], e[1]);}).collect(Collectors.toSet());
+        HashSet<Move> lm = new HashSet<>();
+        for(MoveIterator it = getLegalMoveIterator(); it.hasNext(); ) {
+            int[] edgeCoords = it.getNextMove();
+            lm.add(new DBMove(edgeCoords[0], edgeCoords[1]));
+        }
+        return lm;
     }
 
     @Override

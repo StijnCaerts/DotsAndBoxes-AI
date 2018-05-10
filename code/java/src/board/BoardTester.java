@@ -6,11 +6,11 @@ public class BoardTester {
 
     public static void main(String[] args) {
 
-        BoardTester.verifyRandomGames(10000, 5, 10, 5, 10, 189486484);
+        BoardTester.verifyRandomGames(false,10000, 5, 10, 5, 10, 189486484);
 
     }
 
-    public static boolean verifyRandomGames(int amount, int minColumns, int maxColumns, int minRows, int maxRows, int seed) {
+    public static boolean verifyRandomGames(boolean verify, int amount, int minColumns, int maxColumns, int minRows, int maxRows, int seed) {
 
         // Simulates random games consisting of legal moves and verifies invariants after every move
         // Also undoes all moves at the end and verifies the invariants after every undo
@@ -33,8 +33,8 @@ public class BoardTester {
             // Initialization
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
             int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
-            Board board = new Board(columns, rows, true);
-            if (!BoardTester.verifyInvariants(board))
+            Board board = new Board(columns, rows, false);
+            if (verify && !BoardTester.verifyInvariants(board))
                 return false;
 
             if (game%1000 == 0) {
@@ -42,7 +42,7 @@ public class BoardTester {
             }
 
             // Play random moves until none are left
-            while(board.getLegalMoves().size() > 0) {
+            while(board.movesLeft > 0) {
 
                 // Select random move
                 int[] selectedEdgeCoords = board.getRandomLegalMove(rand);
@@ -74,11 +74,11 @@ public class BoardTester {
                     totalHeuristicInputCalculationTime += (System.nanoTime() - start)/1000000000.0;
 
                     // Verify
-                    if (!BoardTester.verifyInvariants(board))
+                    if (verify && !BoardTester.verifyInvariants(board))
                         throw new RuntimeException("Invariants violated.");
 
                 } catch (RuntimeException e) {
-                    System.out.println("Failed with " + board.getLegalMoves().size() + " moves left!");
+                    System.out.println("Failed with " + board.movesLeft + " moves left!");
                     e.printStackTrace();
                     System.out.println("Old board:");
                     System.out.println(oldBoard.edgesString());
@@ -107,11 +107,11 @@ public class BoardTester {
                         totalUndoTime += (System.nanoTime() - start)/1000000000.0;
 
                         // Verify
-                        if (!BoardTester.verifyInvariants(board))
+                        if (verify && !BoardTester.verifyInvariants(board))
                             throw new RuntimeException("Invariants violated.");
 
                     } catch (RuntimeException e) {
-                        System.out.println("Failed with " + board.getLegalMoves().size() + " moves undone!");
+                        System.out.println("Failed with " + board.movesLeft + " moves undone!");
                         e.printStackTrace();
                         System.out.println("Old board:");
                         System.out.println(oldBoard.edgesString());
@@ -124,7 +124,7 @@ public class BoardTester {
 
         }
 
-        System.out.println("All games were verified successfully!");
+        System.out.println("Tested " + amount + " games with " + minColumns + "-" + maxColumns + " columns " + minRows + "-" + maxRows + " rows.");
         System.out.println("Average board copy time: " + totalCopyTime/totalCopies);
         System.out.println("Average undo time: " + totalUndoTime/totalMoves);
         System.out.println("Average move registration time (including optimal move updating): " + totalMoveRegistrationTime/totalMoves);
