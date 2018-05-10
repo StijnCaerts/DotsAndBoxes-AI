@@ -79,15 +79,9 @@ public class Trainer {
 
         for(int move = 0; move < movesAmount; move++) {
             // Play random move
-            int i = 0;
-            int selectedEdgeIndex = rand.nextInt(board.legalMoves.size());
-            for(int edge : board.legalMoves) {
-                if (i++ == selectedEdgeIndex) {
-                    int[] selectedEdgeCoords = board.intToEdge(edge);
-                    board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
-                    break;
-                }
-            }
+            int[] selectedEdgeCoords = board.getRandomLegalMove(rand);
+            board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
+            break;
         }
 
         return board;

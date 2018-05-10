@@ -37,7 +37,8 @@ public class Board implements MCTS.Board {
     public HashSet<Chain> chains; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
 
     // Moves
-    public HashSet<Integer> legalMoves; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
+    public int movesLeft;
+    public int[] movesLeftPerColumn; // Used to quickly iterate and random-access moves
     public int[] optimalMoves;
 
     // Undo
@@ -57,11 +58,10 @@ public class Board implements MCTS.Board {
         this.valence = new int[columns][rows];
         this.chainAt = new Chain[columns][rows];
         this.chains = new HashSet<>();
-        this.legalMoves = new HashSet<>();
-        for(int x = 0; x < 2*columns + 1; x++) {
-            for(int y = (x + 1)%2; y < 2*rows + 1; y += 2) {
-                this.legalMoves.add(edgeToInt(x, y));
-            }
+        this.movesLeft = 2*this.columns*this.rows + this.columns + this.rows;
+        this.movesLeftPerColumn = new int[2*this.columns + 1];
+        for(int x = 0; x < 2*this.columns + 1; x++) {
+            this.movesLeftPerColumn[x] = this.rows + x%2;
         }
         this.optimalMoves = new int[0];
 
@@ -102,7 +102,9 @@ public class Board implements MCTS.Board {
         }
 
         // Copy moves
-        newBoard.legalMoves = new HashSet<>(this.legalMoves);
+        newBoard.movesLeft = this.movesLeft;
+        newBoard.movesLeftPerColumn = new int[this.movesLeftPerColumn.length];
+        System.arraycopy(this.movesLeftPerColumn, 0, newBoard.movesLeftPerColumn, 0, this.movesLeftPerColumn.length);
         newBoard.optimalMoves = new int[this.optimalMoves.length];
         System.arraycopy(this.optimalMoves, 0, newBoard.optimalMoves, 0, this.optimalMoves.length);
 
@@ -172,7 +174,8 @@ public class Board implements MCTS.Board {
         this.edges[x][y] = true;
 
         // Update legal moves
-        this.legalMoves.remove(edgeToInt(x, y));
+        this.movesLeft--;
+        this.movesLeftPerColumn[x]--;
 
         // Update valence matrix
         this.boxClosed = false;
@@ -218,9 +221,50 @@ public class Board implements MCTS.Board {
         return this.optimalMoves;
     }
 
-    public HashSet<Integer> getLegalMoves() {
-        // Returns the actual object, caller should take care of reference semantics
-        return this.legalMoves;
+    public ArrayList<Integer> getLegalMoves() {
+        // Creates an ArrayList of all currently legal moves
+        // Inefficient, try to iterate elsewhere instead (interface method which returns iterator may be perfect)
+        //TODO
+        ArrayList<Integer> legalMoves = new ArrayList<>();
+        for (int x = 0; x < 2 * this.columns + 1; x++) {
+            if (legalMoves.size() == this.movesLeft)
+                break;
+            if (this.movesLeftPerColumn[x] == 0)
+                continue;
+            int movesFound = 0;
+            for (int y = (x + 1) % 2; y < 2 * this.rows + 1; y += 2) {
+                if (!this.edges[x][y]) {
+                    legalMoves.add(edgeToInt(x, y));
+                    movesFound++;
+                    if (movesFound == this.movesLeftPerColumn[x])
+                        break;
+                }
+            }
+        }
+        return legalMoves;
+    }
+
+    public int[] getRandomLegalMove(Random rand) {
+        int index = rand.nextInt(this.movesLeft);
+        for(int x = 0; x < 2*this.columns + 1; x++) {
+            if (index >= this.movesLeftPerColumn[x]) {
+                // Move is not in this column, move on
+                index -= this.movesLeftPerColumn[x];
+                continue;
+            } else {
+                // Move is in this column, iterate through rows
+                for(int y = (x + 1)%2; y < 2*this.rows + 1; y += 2) {
+                    if (!this.edges[x][y]) {
+                        if (index == 0) {
+                            return new int[] {x, y};
+                        }
+                        index--;
+                    }
+                }
+            }
+        }
+        assert(false);
+        return null;
     }
 
     public double[] getHeuristicInput() {
@@ -254,8 +298,8 @@ public class Board implements MCTS.Board {
         int x = transaction.x;
         int y = transaction.y;
         this.edges[x][y] = false;
-        this.legalMoves.add(edgeToInt(x, y));
-        this.optimalMoves = transaction.optimalMoves;
+        this.movesLeft++;
+        this.movesLeftPerColumn[x]++;
         this.currentPlayer = transaction.currentPlayer;
         this.scores = transaction.scores;
 
@@ -1080,7 +1124,7 @@ public class Board implements MCTS.Board {
     @Override
     public Set<Move> getMoves() {
         //TODO: We should make this more efficient, not feasible to create new object for every possible move at every node
-        HashSet<Integer> lm = this.getLegalMoves();
+        ArrayList<Integer> lm = this.getLegalMoves();
         return lm.stream().map(m -> {int[] e = intToEdge(m); return new DBMove(e[0], e[1]);}).collect(Collectors.toSet());
     }
 

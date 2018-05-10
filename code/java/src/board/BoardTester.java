@@ -6,7 +6,7 @@ public class BoardTester {
 
     public static void main(String[] args) {
 
-        BoardTester.verifyRandomGames(100000, 5, 10, 5, 10, 189486484);
+        BoardTester.verifyRandomGames(10000, 5, 10, 5, 10, 189486484);
 
     }
 
@@ -33,7 +33,7 @@ public class BoardTester {
             // Initialization
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
             int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
-            Board board = new Board(columns, rows, false);
+            Board board = new Board(columns, rows, true);
             if (!BoardTester.verifyInvariants(board))
                 return false;
 
@@ -42,18 +42,10 @@ public class BoardTester {
             }
 
             // Play random moves until none are left
-            while(board.legalMoves.size() > 0) {
+            while(board.getLegalMoves().size() > 0) {
 
                 // Select random move
-                int i = 0;
-                int selectedEdgeIndex = rand.nextInt(board.legalMoves.size());
-                int[] selectedEdgeCoords = new int[] {-1, -1};
-                for(int edge : board.legalMoves) {
-                    if (i++ == selectedEdgeIndex) {
-                        selectedEdgeCoords = board.intToEdge(edge);
-                        break;
-                    }
-                }
+                int[] selectedEdgeCoords = board.getRandomLegalMove(rand);
 
                 // Play and verify
                 Board oldBoard = null;
@@ -86,7 +78,7 @@ public class BoardTester {
                         throw new RuntimeException("Invariants violated.");
 
                 } catch (RuntimeException e) {
-                    System.out.println("Failed with " + board.legalMoves.size() + " moves left!");
+                    System.out.println("Failed with " + board.getLegalMoves().size() + " moves left!");
                     e.printStackTrace();
                     System.out.println("Old board:");
                     System.out.println(oldBoard.edgesString());
@@ -119,7 +111,7 @@ public class BoardTester {
                             throw new RuntimeException("Invariants violated.");
 
                     } catch (RuntimeException e) {
-                        System.out.println("Failed with " + board.legalMoves.size() + " moves undone!");
+                        System.out.println("Failed with " + board.getLegalMoves().size() + " moves undone!");
                         e.printStackTrace();
                         System.out.println("Old board:");
                         System.out.println(oldBoard.edgesString());

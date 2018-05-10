@@ -79,6 +79,9 @@ public class MCTS {
             newRoot = new Node(newBoard);
         }
         this.rootNode = newRoot;
+        System.out.println(((board.Board) newRoot.board).edgesString());
+        System.out.println(((board.Board) newRoot.board).scores[0]);
+        System.out.println(((board.Board) newRoot.board).scores[1]);
     }
 
     public Move getNextMove(double timeAllowed) {
@@ -100,6 +103,7 @@ public class MCTS {
 
             iterations++;
         }
+        System.out.println("Iterations: " + iterations);
 
         // return most visited node's move
         Optional<Node> opt = this.rootNode.children.stream().max(Comparator.comparingInt(c -> c.plays));
