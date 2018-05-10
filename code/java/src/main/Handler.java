@@ -1,10 +1,12 @@
 package main;
 
 import java.net.InetSocketAddress;
+import java.util.Iterator;
 
 import MCTS.MCTSAgent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.martiansoftware.jsap.*;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -15,9 +17,56 @@ public class Handler extends WebSocketServer {
     public Agent agent;
     public JsonParser parser = new JsonParser();
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws JSAPException {
+        JSAP jsap = new JSAP();
 
-        int port = 10000;
+        Switch h = new Switch("help")
+                .setShortFlag('h')
+                .setLongFlag("help");
+        h.setHelp("Show usage information for this application.");
+        jsap.registerParameter(h);
+
+        FlaggedOption s = new FlaggedOption("strategy")
+                .setStringParser(JSAP.INTEGER_PARSER)
+                .setDefault("6")
+                .setShortFlag('s')
+                .setLongFlag("strategy")
+                .setAllowMultipleDeclarations(false);
+        s.setHelp("Strategy that will be used by the agent.\n" +
+                "1: Monte Carlo tree search\n" +
+                "2: MCTS with early simulation termination\n" +
+                "3: the latter extended with search tree reuse\n" +
+                "4: the latter extended with optimal moves\n" +
+                "5: the latter extended with a neural network"
+        );
+        jsap.registerParameter(s);
+
+        FlaggedOption p = new FlaggedOption("port")
+                .setStringParser(JSAP.INTEGER_PARSER)
+                .setDefault("10000")
+                .setShortFlag('p')
+                .setLongFlag("port")
+                .setAllowMultipleDeclarations(false);
+        p.setHelp("Port on which the agent will run.");
+        jsap.registerParameter(p);
+
+        JSAPResult config = jsap.parse(args);
+
+        if(!config.success() || config.getBoolean("help")) {
+            System.err.println();
+            for(Iterator errs = config.getErrorMessageIterator(); errs.hasNext();) {
+                System.err.println("Error: " + errs.next());
+            }
+
+            System.err.println();
+            System.err.println("Usage: java -jar agent.jar");
+            System.err.println("        " + jsap.getUsage());
+            System.err.println();
+            System.err.println(jsap.getHelp());
+            System.exit(1);
+        }
+
+        int port = config.getInt("port");
         WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
         System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
         server.run();
