@@ -21,39 +21,43 @@ public class Handler extends WebSocketServer {
     public JsonParser parser = new JsonParser();
     private static int strategy_number;
 
-    public static void main(String args[]) throws JSAPException {
+    public static void main(String args[]) {
         JSAP jsap = new JSAP();
 
-        Switch h = new Switch("help")
-                .setShortFlag('h')
-                .setLongFlag("help");
-        h.setHelp("Show usage information for this application.");
-        jsap.registerParameter(h);
+        try {
+            Switch h = new Switch("help")
+                    .setShortFlag('h')
+                    .setLongFlag("help");
+            h.setHelp("Show usage information for this application.");
+            jsap.registerParameter(h);
 
-        FlaggedOption s = new FlaggedOption("strategy")
-                .setStringParser(JSAP.INTEGER_PARSER)
-                .setDefault("6")
-                .setShortFlag('s')
-                .setLongFlag("strategy")
-                .setAllowMultipleDeclarations(false);
-        s.setHelp("Strategy that will be used by the agent.\n" +
-                "1: Monte Carlo tree search\n" +
-                "2: MCTS with early simulation termination\n" +
-                "3: the latter extended with search tree reuse\n" +
-                "4: the latter extended with optimal moves\n" +
-                "5: the latter extended with increased simulation time\n" +
-                "6: the latter extended with a neural network (default)"
-        );
-        jsap.registerParameter(s);
+            FlaggedOption s = new FlaggedOption("strategy")
+                    .setStringParser(JSAP.INTEGER_PARSER)
+                    .setDefault("6")
+                    .setShortFlag('s')
+                    .setLongFlag("strategy")
+                    .setAllowMultipleDeclarations(false);
+            s.setHelp("Strategy that will be used by the agent.\n" +
+                    "1: Monte Carlo tree search\n" +
+                    "2: MCTS with early simulation termination\n" +
+                    "3: the latter extended with search tree reuse\n" +
+                    "4: the latter extended with optimal moves\n" +
+                    "5: the latter extended with increased simulation time\n" +
+                    "6: the latter extended with a neural network (default)"
+            );
+            jsap.registerParameter(s);
 
-        FlaggedOption p = new FlaggedOption("port")
-                .setStringParser(JSAP.INTEGER_PARSER)
-                .setDefault("10000")
-                .setShortFlag('p')
-                .setLongFlag("port")
-                .setAllowMultipleDeclarations(false);
-        p.setHelp("Port on which the agent will run.");
-        jsap.registerParameter(p);
+            FlaggedOption p = new FlaggedOption("port")
+                    .setStringParser(JSAP.INTEGER_PARSER)
+                    .setDefault("10000")
+                    .setShortFlag('p')
+                    .setLongFlag("port")
+                    .setAllowMultipleDeclarations(false);
+            p.setHelp("Port on which the agent will run.");
+            jsap.registerParameter(p);
+        } catch (JSAPException e) {
+            e.printStackTrace();
+        }
 
         JSAPResult config = jsap.parse(args);
 
