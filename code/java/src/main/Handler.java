@@ -37,7 +37,8 @@ public class Handler extends WebSocketServer {
                 "2: MCTS with early simulation termination\n" +
                 "3: the latter extended with search tree reuse\n" +
                 "4: the latter extended with optimal moves\n" +
-                "5: the latter extended with a neural network"
+                "5: the latter extended with increased simulation time\n" +
+                "6: the latter extended with a neural network"
         );
         jsap.registerParameter(s);
 
