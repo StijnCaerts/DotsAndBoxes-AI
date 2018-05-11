@@ -1,4 +1,4 @@
-package MCTS.Strategy2;
+package MCTS.Strategy3;
 
 import MCTS.Board;
 import MCTS.Move;
@@ -8,6 +8,11 @@ import java.util.*;
 public class MCTS {
 
     private Node rootNode;
+
+    public void init(Board board) {
+        assert(this.rootNode == null);
+        this.rootNode = new Node(board);
+    }
 
     private Node select() {
         Node node = this.rootNode;
