@@ -1,7 +1,5 @@
 package main;
 
-import MCTS.MCTS;
-import MCTS.MCTSAgent;
 import MCTS.MCTSAgentFactory;
 import board.Board;
 

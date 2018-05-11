@@ -1,15 +1,12 @@
 package main;
 
 import java.net.InetSocketAddress;
-import java.util.Iterator;
 
-import MCTS.MCTSAgent;
 import MCTS.Strategy1.Agent1;
 import MCTS.Strategy2.Agent2;
 import MCTS.Strategy3.Agent3;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.martiansoftware.jsap.*;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
