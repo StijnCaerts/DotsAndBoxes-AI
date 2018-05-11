@@ -81,7 +81,14 @@ public class Node {
                 // Consider all legal moves
                 if (this.generator == null)
                     this.generator = new RandomMoveGenerator(this.board);
-                move = this.generator.getRandomLegalMoveAsInt(rand);
+                for(int i = 0; i < 100; i++) {
+                    move = this.generator.getRandomLegalMoveAsInt(rand);
+                    if (this.board.isBad(move)) {
+                        this.generator.reverseMove(move);
+                    } else {
+                        break;
+                    }
+                }
             }
 
             // Create child

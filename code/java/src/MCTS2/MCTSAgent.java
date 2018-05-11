@@ -15,7 +15,7 @@ public class MCTSAgent extends Agent {
     public MCTSAgent(int player, double timeLimit, int rows, int columns, String gameId) {
         super(player, timeLimit, rows, columns, gameId);
         this.rootNode = new Node(new Board(columns, rows, false));
-        this.rand = new Random();
+        this.rand = new Random(9818919);
     }
 
     @Override
@@ -70,8 +70,8 @@ public class MCTSAgent extends Agent {
         // Return most visited node's move
         Optional<Node> opt = this.rootNode.children.stream().max(Comparator.comparingInt(c -> c.plays));
         try {
-            Node n = opt.get();
-            return n.board.intToEdge(n.move);
+            Node bestChild = opt.get();
+            return rootNode.board.intToEdge(bestChild.move);
         } catch (NoSuchElementException e) {
             return null;
         }

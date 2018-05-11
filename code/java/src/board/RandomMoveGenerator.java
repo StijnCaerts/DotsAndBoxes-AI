@@ -25,6 +25,14 @@ public class RandomMoveGenerator {
         return this.movesLeft > 0;
     }
 
+    public void reverseMove(int move) {
+        // Adds moves again to possible set of moves for this generator
+        int[] edge = this.board.intToEdge(move);
+        this.movesLeft++;
+        this.movesLeftPerColumn[edge[0]]++;
+        this.generatedMoves.remove(move);
+    }
+
     public int getRandomLegalMoveAsInt(Random rand) {
         return this.board.edgeToInt(getRandomLegalMove(rand));
     }

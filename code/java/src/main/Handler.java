@@ -18,9 +18,13 @@ public class Handler extends WebSocketServer {
 
     public Agent agent;
     public JsonParser parser = new JsonParser();
-    private static int strategy_number;
+    private static int strategy_number = -1;
 
-    public static void main(String args[]) throws JSAPException {
+    public static void main(String[] args) {
+        Handler.simpleMain();
+    }
+
+    /*public static void JSAPMain(String args[]) throws JSAPException {
         JSAP jsap = new JSAP();
 
         Switch h = new Switch("help")
@@ -81,6 +85,14 @@ public class Handler extends WebSocketServer {
         WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
         System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
         server.run();
+    }*/
+
+    public static void simpleMain() {
+        // Please keep this one here, I can't get JSAP to work and just want to test agents sometimes :P
+        int port = 10018;
+        WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
+        System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
+        server.run();
     }
 
     public Handler(InetSocketAddress address) {
@@ -125,7 +137,7 @@ public class Handler extends WebSocketServer {
                     this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
                     break;
                 default:
-                    this.agent = new MCTSAgent(player, timeLimit, rows, columns, gameId);
+                    this.agent = new MCTS2.MCTSAgent(player, timeLimit, rows, columns, gameId);
             }
 
             // If we are player 1, respond right away
@@ -174,11 +186,15 @@ public class Handler extends WebSocketServer {
 
     private void replyMove(WebSocket conn) {
         // Queries the agent for its next move and writes it using the given connection
-        int[] move = this.agent.getNextMove();
-        int x = move[0];
-        int y = move[1];
-        String message = "{\"type\": \"action\", \"location\": [" + Integer.toString(y/2) + ", " + Integer.toString(x/2) + "], \"orientation\": " + (x%2 == 0 ? "\"v\"" : "\"h\"") + "}";
-        conn.send(message);
+        try {
+            int[] move = this.agent.getNextMove();
+            int x = move[0];
+            int y = move[1];
+            String message = "{\"type\": \"action\", \"location\": [" + Integer.toString(y/2) + ", " + Integer.toString(x/2) + "], \"orientation\": " + (x%2 == 0 ? "\"v\"" : "\"h\"") + "}";
+            conn.send(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

@@ -11,8 +11,7 @@ import java.util.Random;
 public class Simulator {
 
     public static void main(String[] args) {
-        int[] res = Simulator.simulate(new MCTSAgentFactory(), new MCTS2.MCTSAgentFactory(), 10, 0.5, 5, 5, 5, 5, true);
-
+        int[] res = Simulator.simulate(new MCTSAgentFactory(), new MCTS2.MCTSAgentFactory(), 100, 0.5, 5, 6, 5, 5, true);
     }
 
     public static int[] simulate(AgentFactory factory1, AgentFactory factory2, int gamesAmount, double timeLimit, int minColumns, int maxColumns, int minRows, int maxRows, boolean print) {
@@ -53,8 +52,8 @@ public class Simulator {
                 }
             }
 
-            res[3*(game%2) + (int) Math.signum(board.scores[1] - board.scores[0]) + 1]++;
             // End
+            res[3*(game%2) + (int) Math.signum(board.scores[1] - board.scores[0]) + 1]++;
             if (print) {
 
                 MCTS mcts = ((MCTSAgent) agents[0]).mcts;
@@ -81,19 +80,21 @@ public class Simulator {
 
         }
 
-        System.out.println("Simulated " + gamesAmount + " games in between " + factory1.getClass() + " and " + factory2.getClass());
-        System.out.println("timeLimit: " + timeLimit + ", columns: " + minColumns + "-" + maxColumns + ", rows: " + minRows + "-" + maxRows);
-        System.out.println(Arrays.toString(res));
-        System.out.println("MCTS:");
-        System.out.println("Iterations: " + mcts1Iterations);
-        System.out.println("Moves: " + mcts1Moves);
-        System.out.println("Average iterations/move: " + (double) mcts1Iterations/mcts1Moves);
-        System.out.println("Average time/iteration: " + timeLimit*mcts1Moves/mcts1Iterations);
-        System.out.println("MCTS2:");
-        System.out.println("Iterations: " + mcts2Iterations);
-        System.out.println("Moves: " + mcts2Moves);
-        System.out.println("Average iterations/move: " + (double) mcts2Iterations/mcts2Moves);
-        System.out.println("Average time/iteration: " + timeLimit*mcts2Moves/mcts2Iterations);
+        if (print) {
+            System.out.println("Simulated " + gamesAmount + " games in between " + factory1.getClass() + " and " + factory2.getClass());
+            System.out.println("timeLimit: " + timeLimit + ", columns: " + minColumns + "-" + maxColumns + ", rows: " + minRows + "-" + maxRows);
+            System.out.println(Arrays.toString(res));
+            System.out.println("MCTS:");
+            System.out.println("Iterations: " + mcts1Iterations);
+            System.out.println("Moves: " + mcts1Moves);
+            System.out.println("Average iterations/move: " + (double) mcts1Iterations/mcts1Moves);
+            System.out.println("Average time/iteration: " + timeLimit*mcts1Moves/mcts1Iterations);
+            System.out.println("MCTS2:");
+            System.out.println("Iterations: " + mcts2Iterations);
+            System.out.println("Moves: " + mcts2Moves);
+            System.out.println("Average iterations/move: " + (double) mcts2Iterations/mcts2Moves);
+            System.out.println("Average time/iteration: " + timeLimit*mcts2Moves/mcts2Iterations);
+        }
 
         return res;
 

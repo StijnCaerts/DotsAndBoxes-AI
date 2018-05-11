@@ -29,6 +29,7 @@ public class Board implements MCTS.Board {
     // Temporary variables used during calculations, doesn't store state across multiple moves
     public boolean boxClosed; // Whether or not a box was closed during this move
     public boolean chainSplit; // Whether or not a previous box update already split a shared chain
+    public boolean openedChain; // Created half-open or closed chain
 
     // Board representation
     public boolean[][] edges; // false means no line has been drawn yet
@@ -279,8 +280,7 @@ public class Board implements MCTS.Board {
         // Generates a new move
         // Returns 0 if there are no moves left
         // If there are optimal moves, this will be one of those
-        // If there aren't, it will be a random legal move which isn't bad (unless it can't find a non-bade one within 1000 iterations)
-        //TODO: Check for bad moves
+        // If there aren't, it will be a random legal move which isn't bad (unless it can't find a non-bad one within 1000 iterations)
 
         if (this.movesLeft == 0)
             return 0;
@@ -289,8 +289,57 @@ public class Board implements MCTS.Board {
             // Generate random optimal move
             return this.optimalMoves[rand.nextInt(this.optimalMoves.length)];
         } else {
+
             // Generate random legal move
-            return getRandomLegalMoveAsInt(rand);
+            int move = 0;
+            for(int i = 0; i < 100; i++) {
+                move = getRandomLegalMoveAsInt(rand);
+                if (!isBad(move))
+                    break;
+            }
+            return move;
+        }
+
+    }
+
+    public boolean isBad(int move) {
+
+        // Checks if move is bad
+        // Current heuristic: don't create half-open or closed chains in the first 50% of the game
+        if ((double) this.movesLeft/(2*this.columns*this.rows + this.columns + this.rows) < 0.5) {
+            return false;
+        } else {
+
+            int[] edgeCoords = intToEdge(move);
+            int x = edgeCoords[0];
+            int y = edgeCoords[1];
+
+            // Simulate registerMove and boxUpdate but only do checks we need to check if chain was opened
+            if (x%2 == 0) {
+                // Vertical edge, increase valence of left and right boxes
+                if (x/2 - 1 >= 0) {
+                    if (isBoxUpdateBad(x/2 - 1, y/2))
+                        return true;
+                }
+                if (x/2 < this.columns) {
+                    if (isBoxUpdateBad(x/2, y/2))
+                        return true;
+                }
+            } else {
+                // Horizontal edge, increase valence of top and bottom boxes
+                if (y/2 - 1 >= 0) {
+                    if (isBoxUpdateBad(x/2, y/2 - 1))
+                        return true;
+                }
+                if (y/2 < this.rows) {
+                    if (isBoxUpdateBad(x/2, y/2))
+                        return true;
+                }
+            }
+
+            // No bad box updates found
+            return false;
+
         }
 
     }
@@ -451,6 +500,16 @@ public class Board implements MCTS.Board {
             this.optimalMoves = new int[0];
         }
 
+    }
+
+    protected boolean isBoxUpdateBad(int x, int y) {
+        if (this.valence[x][y] == 2) {
+            // New valence would be 3
+            Chain chain = this.chainAt[x][y];
+            if (chain.type == ChainType.LOOP || chain.type == ChainType.OPEN)
+                return true;
+        }
+        return false;
     }
 
     protected void boxUpdate(int x, int y) {
@@ -675,13 +734,6 @@ public class Board implements MCTS.Board {
             case 3:
 
                 // New valence = 3: box was already part of a chain and will be part of a chain
-                // Chain will go from open to half-open or from half-open to closed and possibly split up
-                // Effect of other box with increased valence:
-                // Edge of board: same, we don't need to take the edges into account
-                // Other new valence = 1: do nothing, same
-                // Other new valence = 2: look for chains to connect to, but is disconnected from this box so stays the same
-                // Other new valence = 3: both boxes were part of the same chain and are now split up, needs asymmetric handling
-                // Other new valence = 4: we're in a half-open or closed chain, make it one shorter
 
                 chain = this.chainAt[x][y];
                 int index = chain.boxes.indexOf(box); // Own position in chain;
@@ -689,6 +741,7 @@ public class Board implements MCTS.Board {
                 switch(chain.type) {
                     case OPEN:
 
+                        this.openedChain = true;
                         splitIndex = findSplitIndex(chain, x, y, index);
                         if (splitIndex == 0) {
                             // Split at start, just change chain type
@@ -751,6 +804,8 @@ public class Board implements MCTS.Board {
                         // Marked edge must be inside of loop, so loop becomes closed chain
                         // This case can only occur if this box is the first to be updated, so no check for chain splits
                         // Chain size stays the same, boxes may need to be re-ordered
+
+                        this.openedChain = true;
 
                         // Find neighboring connected box
                         int neighborBox = -1;
