@@ -1,8 +1,8 @@
-package MCTS.Strategy1;
+package MCTS.Strategy2;
 
 import MCTS.Board;
-import MCTS.DBMove;
 import MCTS.Move;
+import MCTS.DBMove;
 import exceptions.GameStateNotDecidedException;
 
 import java.util.Arrays;
@@ -55,8 +55,13 @@ public class GameState implements Board {
     @Override
     public boolean gameDecided() {
         int total_points = this.rows * this.cols;
+        int half_points = total_points / 2;
         if(this.score[0] + this.score[1] == total_points) return true;
-        else return false;
+        if(this.score[0] > half_points || this.score[1] > half_points) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

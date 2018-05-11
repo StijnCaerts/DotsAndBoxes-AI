@@ -1,16 +1,15 @@
-package MCTS.Strategy1;
+package MCTS.Strategy2;
 
+import main.Agent;
 import MCTS.DBMove;
 import MCTS.Move;
-import main.Agent;
 
-public class Agent1 extends Agent {
+public class Agent2 extends Agent {
 
     private MCTS mcts;
     private GameState gs;
 
-
-    public Agent1(int player, double timeLimit, int rows, int columns, String gameId) {
+    public Agent2(int player, double timeLimit, int rows, int columns, String gameId) {
         super(player, timeLimit, rows, columns, gameId);
         this.gs = new GameState(rows, columns);
         this.mcts = new MCTS();

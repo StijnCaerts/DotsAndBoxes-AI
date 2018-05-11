@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import MCTS.MCTSAgent;
 import MCTS.Strategy1.Agent1;
+import MCTS.Strategy2.Agent2;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.martiansoftware.jsap.*;
@@ -116,6 +117,9 @@ public class Handler extends WebSocketServer {
             switch (strategy_number) {
                 case 1:
                     this.agent = new Agent1(player, timeLimit, rows, columns, gameId);
+                    break;
+                case 2:
+                    this.agent = new Agent2(player, timeLimit, rows, columns, gameId);
                     break;
                 case 0:
                     this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
