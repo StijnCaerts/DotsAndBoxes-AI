@@ -26,24 +26,15 @@ public class MCTS {
         return node.expandMove(moves.get(i));
     }
 
-    private double simulate(Board board, int maxIterations) {
+    private double simulate(Board board) {
         Board b = board.duplicate();
 
         Move m = b.getRandomMove();
         while(m != null) {
             b.playMove(m);
             m = b.getRandomMove();
-
-            maxIterations--;
-            if(maxIterations <= 0) {
-                throw new IllegalArgumentException("Game too deep to simulate with " + Integer.toString(maxIterations) + " iterations.");
-            }
         }
         return b.gameResult();
-    }
-
-    private double simulate(Board board) {
-        return simulate(board, 1000);
     }
 
     private void update(Node node, double result) {
