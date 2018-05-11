@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.Iterator;
 
 import MCTS.MCTSAgent;
+import MCTS.Strategy1.Agent1;
+import MCTS.Strategy2.Agent2;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.martiansoftware.jsap.*;
@@ -16,6 +18,7 @@ public class Handler extends WebSocketServer {
 
     public Agent agent;
     public JsonParser parser = new JsonParser();
+    private static int strategy_number;
 
     public static void main(String args[]) throws JSAPException {
         JSAP jsap = new JSAP();
@@ -37,7 +40,8 @@ public class Handler extends WebSocketServer {
                 "2: MCTS with early simulation termination\n" +
                 "3: the latter extended with search tree reuse\n" +
                 "4: the latter extended with optimal moves\n" +
-                "5: the latter extended with a neural network"
+                "5: the latter extended with increased simulation time\n" +
+                "6: the latter extended with a neural network (default)"
         );
         jsap.registerParameter(s);
 
@@ -66,11 +70,17 @@ public class Handler extends WebSocketServer {
             System.exit(1);
         }
 
+        int config_strategy_number = config.getInt("strategy");
+        if(config_strategy_number >= 0 && config_strategy_number <= 6) {
+            strategy_number = config_strategy_number;
+        } else {
+            strategy_number = 6;
+        }
+
         int port = config.getInt("port");
         WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
         System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
         server.run();
-
     }
 
     public Handler(InetSocketAddress address) {
@@ -104,8 +114,19 @@ public class Handler extends WebSocketServer {
             int columns = grid.get(1).getAsInt();
             String gameId = jsonMessage.get("game").getAsString();
 
-            //this.agent = new main.TestAgent(player, timeLimit, rows, columns, gameId);
-            this.agent = new MCTSAgent(player, timeLimit, rows, columns, gameId);
+            switch (strategy_number) {
+                case 1:
+                    this.agent = new Agent1(player, timeLimit, rows, columns, gameId);
+                    break;
+                case 2:
+                    this.agent = new Agent2(player, timeLimit, rows, columns, gameId);
+                    break;
+                case 0:
+                    this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
+                    break;
+                default:
+                    this.agent = new MCTSAgent(player, timeLimit, rows, columns, gameId);
+            }
 
             // If we are player 1, respond right away
             if (this.agent.player == 0)
