@@ -5,6 +5,8 @@ import java.util.*;
 public class MCTS {
 
     private Node rootNode;
+    public int iterations = 0;
+    public int moves = 0;
 
     public void init(Board board) {
         assert(this.rootNode == null);
@@ -98,9 +100,9 @@ public class MCTS {
             double result = this.simulate(node.board);
             this.update(node, result);
 
-            iterations++;
+            this.iterations++;
         }
-        System.out.println("Iterations: " + iterations);
+        this.moves++;
 
         // return most visited node's move
         Optional<Node> opt = this.rootNode.children.stream().max(Comparator.comparingInt(c -> c.plays));

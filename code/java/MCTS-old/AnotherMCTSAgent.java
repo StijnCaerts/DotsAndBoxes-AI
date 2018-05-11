@@ -1,8 +1,5 @@
 package MCTS2;
 
-import MCTS2.GameState;
-import MCTS2.MCTS;
-import MCTS2.Move;
 import main.Agent;
 
 public class AnotherMCTSAgent extends main.Agent {

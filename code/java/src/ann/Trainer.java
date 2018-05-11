@@ -123,13 +123,13 @@ public class Trainer {
         int move = 0;
         int totalMoves = board.movesLeft;
         while(board.movesLeft > 0 && (move < simulationRatio*totalMoves || board.hasOptimalMoves())) {
-            int[] selectedEdgeCoords;
+            int selectedEdge;
             if (board.hasOptimalMoves()) {
-                selectedEdgeCoords = board.intToEdge(board.getOptimalMoves()[rand.nextInt(board.getOptimalMoves().length)]);
+                selectedEdge = board.getOptimalMoves()[rand.nextInt(board.getOptimalMoves().length)];
             } else {
-                selectedEdgeCoords = board.getRandomLegalMove(rand);
+                selectedEdge = board.getRandomLegalMoveAsInt(rand);
             }
-            board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
+            board.registerMove(selectedEdge);
             move++;
         }
 

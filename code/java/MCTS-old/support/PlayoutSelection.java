@@ -1,7 +1,5 @@
 package MCTS2.support;
 
-import MCTS2.Board;
-
 /**
  * Use this as a replacement for the conventional
  * playout function during simulations. The idea

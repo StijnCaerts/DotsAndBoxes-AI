@@ -161,9 +161,21 @@ public class Board implements MCTS.Board {
         return new int[] {edge%(2*this.columns + 1), edge/(2*this.columns + 1)};
     }
 
+    public int edgeToInt(int[] edge) {
+        return edgeToInt(edge[0], edge[1]);
+    }
+
     public int edgeToInt(int x, int y) {
         // Converts a edge to an int ID
         return y*(2*this.columns + 1) + x;
+    }
+
+    public void registerMove(int move) {
+        registerMove(intToEdge(move));
+    }
+
+    public void registerMove(int[] move) {
+        registerMove(move[0], move[1]);
     }
 
     public void registerMove(int x, int y) {
@@ -231,27 +243,56 @@ public class Board implements MCTS.Board {
         return new MoveIterator(this);
     }
 
+    public int getRandomLegalMoveAsInt(Random rand) {
+        return edgeToInt(getRandomLegalMove(rand));
+    }
+
     public int[] getRandomLegalMove(Random rand) {
-        int index = rand.nextInt(this.movesLeft);
-        for(int x = 0; x < 2*this.columns + 1; x++) {
-            if (index >= this.movesLeftPerColumn[x]) {
-                // Move is not in this column, move on
-                index -= this.movesLeftPerColumn[x];
-                continue;
-            } else {
-                // Move is in this column, iterate through rows
-                for(int y = (x + 1)%2; y < 2*this.rows + 1; y += 2) {
-                    if (!this.edges[x][y]) {
-                        if (index == 0) {
-                            return new int[] {x, y};
+        if (this.movesLeft == 0) {
+            return null;
+        } else {
+            int index = rand.nextInt(this.movesLeft);
+            for(int x = 0; x < 2*this.columns + 1; x++) {
+                if (index >= this.movesLeftPerColumn[x]) {
+                    // Move is not in this column, move on
+                    index -= this.movesLeftPerColumn[x];
+                    continue;
+                } else {
+                    // Move is in this column, iterate through rows
+                    for(int y = (x + 1)%2; y < 2*this.rows + 1; y += 2) {
+                        if (!this.edges[x][y]) {
+                            if (index == 0) {
+                                return new int[] {x, y};
+                            }
+                            index--;
                         }
-                        index--;
                     }
                 }
             }
+            assert(false);
+            return null;
         }
-        assert(false);
-        return null;
+    }
+
+    public int getNextAcceptableMove(Random rand) {
+
+        // Generates a new move
+        // Returns 0 if there are no moves left
+        // If there are optimal moves, this will be one of those
+        // If there aren't, it will be a random legal move which isn't bad (unless it can't find a non-bade one within 1000 iterations)
+        //TODO: Check for bad moves
+
+        if (this.movesLeft == 0)
+            return 0;
+
+        if (this.optimalMoves.length > 0) {
+            // Generate random optimal move
+            return this.optimalMoves[rand.nextInt(this.optimalMoves.length)];
+        } else {
+            // Generate random legal move
+            return getRandomLegalMoveAsInt(rand);
+        }
+
     }
 
     public math.Vector getHeuristicInput() {
@@ -273,6 +314,10 @@ public class Board implements MCTS.Board {
             }
         }
         return new Vector(res);
+    }
+
+    public int getCurrentPlayer() {
+        return this.currentPlayer;
     }
 
     // Helper methods
