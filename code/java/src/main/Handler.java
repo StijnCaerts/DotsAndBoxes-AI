@@ -44,7 +44,7 @@ public class Handler extends WebSocketServer {
                     "2: MCTS with early simulation termination\n" +
                     "3: the latter extended with search tree reuse\n" +
                     "4: the latter extended with optimal moves\n" +
-                    "5: the latter extended with increased simulation time\n" +
+                    "5: the latter extended with increased search time\n" +
                     "6: the latter extended with a neural network (default)"
             );
             jsap.registerParameter(s);
@@ -142,7 +142,7 @@ public class Handler extends WebSocketServer {
                     this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
                     break;
                 default:
-                    this.agent = new MCTS2.MCTSAgent(player, timeLimit, rows, columns, gameId);
+                    this.agent = new MCTS2.AsyncSearchAgent(player, timeLimit, rows, columns, gameId);
             }
 
             // If we are player 1, respond right away

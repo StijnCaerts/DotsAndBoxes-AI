@@ -6,7 +6,7 @@ import main.Agent;
 
 public class Agent3 extends Agent {
 
-    private MCTS mcts;
+    public MCTS mcts;
 
     public Agent3(int player, double timeLimit, int rows, int columns, String gameId) {
         super(player, timeLimit, rows, columns, gameId);

@@ -7,8 +7,8 @@ import java.util.*;
 
 public class MCTSAgent extends Agent {
 
-    private Node rootNode;
-    private Random rand; // All random decisions are based on this object, so can be seeded for determinism
+    Node rootNode;
+    Random rand; // All random decisions are based on this object, so can be seeded for determinism
     public int iterations = 0;
     public int moves = 0;
 
@@ -78,7 +78,7 @@ public class MCTSAgent extends Agent {
 
     }
 
-    private Node select() {
+    Node select() {
         Node node = this.rootNode;
 
         while(!node.canExpand() && !node.children.isEmpty()) {
@@ -88,7 +88,7 @@ public class MCTSAgent extends Agent {
         return node;
     }
 
-    private double simulate(Board board) {
+    double simulate(Board board) {
 
         Board boardCopy = board.deepcopy();
         int move = boardCopy.getNextAcceptableMove(this.rand);
@@ -100,10 +100,10 @@ public class MCTSAgent extends Agent {
 
     }
 
-    private void update(Node node, double result) {
+    void update(Node node, double result) {
         while(node != null) {
             node.plays++;
-            node.score += Node.getScore(result, this.rootNode.board.getCurrentPlayer());
+            node.score += Node.getScore(result, this.player);
             node = node.parent;
         }
     }
