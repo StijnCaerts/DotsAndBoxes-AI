@@ -29,7 +29,7 @@
 	\subsection{Monte Carlo tree search (MCTS)}
 	In order to create an intelligent agent for the game Dots and Boxes, we started by implementing a Monte Carlo tree search algorithm in Python. We based our implementation on the existing MCTS implementation of Dieter Buys\cite{DieterBuys:MCTS}, as this implementation is in Python, very clear to read and use and easy to adapt to our own needs.
 	
-	Later we switched to Java, because Python didn't perform as good as Java for the board representation with chains that we introduced in a later stage (see Section \ref{s:optimalMoves}). We translated the Python code we had at that moment to a Java implementation, and continued from there on with the Java code.
+	Later we switched to Java, because Python didn't perform as good as Java for the board representation with chains that we introduced in a later stage (see Section \ref{s:optimalMoves}). We translated the Python code we had at that moment to a Java implementation, and continued from there on with the Java code. Based in this code, we made some optimizations, which are described in the following sections.
 	
 	\subsection{Early termination of simulation}
 	In the simulation step of the Monte Carlo tree search algorithm, random moves will be played until the end of a game is reached. This is done to find out at the end which player will win if these moves are played, and return this as a result of the simulation. However, it is sometimes possible to determine the winner of a game before the end of a game is reached. If one of the two players has captured more than half of the total boxes that can be captured ($rows * columns$), then this player is guaranteed to win the game. This means that the simulation can be stopped whenever the winner is decided, resulting in shorter simulations.
@@ -44,6 +44,9 @@
 	
 	\subsection{Optimal moves\label{s:optimalMoves}}
 	% TODO bespreking chains
+	
+	The use of optimal moves, which can be derived from the chains on the board, allows us to reduce the search space drastically. We no longer use totally random moves in the simulation of gameplay, but only use random optimal moves if these are present. Also in the expansion of a node in the search tree, we only consider optimal moves, which reduces the branching factor.
+	An important assumption at this point is that an opponent will play as an intelligent agent.
 	
 	\subsection{Increased search time}
 	
