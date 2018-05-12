@@ -1,0 +1,61 @@
+\documentclass[11pt,a4paper,titlepage]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{url}
+
+%\renewcommand{\familydefault}{\sfdefault}
+
+\author{Wouter Baert \& Stijn Caerts}
+\title{Machine Learning: Project \\ \small{Final report}}
+
+\begin{document}
+	\maketitle
+	
+	\section*{Abstract}
+	
+	\tableofcontents
+	\newpage
+	
+	\section{Introduction}
+	% Problem statement
+	
+	\section{Methodology}
+	\subsection{Monte Carlo tree search (MCTS)}
+	In order to create an intelligent agent for the game Dots and Boxes, we started by implementing a Monte Carlo tree search algorithm in Python. We based our implementation on the existing MCTS implementation of Dieter Buys\cite{DieterBuys:MCTS}, as this implementation is in Python, very clear to read and use and easy to adapt to our own needs.
+	
+	Later we switched to Java, because Python didn't perform as good as Java for the board representation with chains that we introduced in a later stage (see Section \ref{s:optimalMoves}). We translated the Python code we had at that moment to a Java implementation, and continued from there on with the Java code. Based in this code, we made some optimizations, which are described in the following sections.
+	
+	\subsection{Early termination of simulation}
+	In the simulation step of the Monte Carlo tree search algorithm, random moves will be played until the end of a game is reached. This is done to find out at the end which player will win if these moves are played, and return this as a result of the simulation. However, it is sometimes possible to determine the winner of a game before the end of a game is reached. If one of the two players has captured more than half of the total boxes that can be captured ($rows * columns$), then this player is guaranteed to win the game. This means that the simulation can be stopped whenever the winner is decided, resulting in shorter simulations.
+	
+	\subsection{Reuse of the search tree}
+	Most implementations of Monte Carlo tree search don't retain the search tree after the tree is used to get the best move for a given state. For every search for a move, a new search tree is created and deleted after a move is returned.
+	However, the search tree still holds relevant information after a move is returned. This information can be reused when we search for a new move. 
+	
+	Implementation for keeping the search tree is fairly simple. The node which corresponds with the move that has been played is either already in the search tree as a child of the current root node, or was not yet expanded and thus isn't in the search tree. In the case that the corresponding node is already in the tree, this node becomes the new root node and its subtree is retained. In the other case, a new node is created for the state that was reached by playing the move and this node is used as the new root node.
+	
+	We don't expect the increase in performance of using this optimization to be large, because the branching factor of a game of Dots and Boxes is very high. A lot of information that was valuable for the deciding the previous move, is no longer relevant thanks to this high branching factor. Only the part of the tree that was explored in the direction of this particular node is still relevant for a next search process.
+	
+	\subsection{Optimal moves\label{s:optimalMoves}}
+	% TODO bespreking chains
+	
+	The use of optimal moves, which can be derived from the chains on the board, allows us to reduce the search space drastically. We no longer use totally random moves in the simulation of gameplay, but only use random optimal moves if these are present. Also in the expansion of a node in the search tree, we only consider optimal moves, which reduces the branching factor.
+	An important assumption at this point is that an opponent will play as an intelligent agent.
+	
+	\subsection{Increased search time}
+	
+	\subsection{Artificial Neural Network}
+	
+	\section{Results}
+
+
+	\newpage
+	\bibliographystyle{unsrt}
+	\bibliography{final_report}
+\end{document}
