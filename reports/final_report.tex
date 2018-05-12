@@ -17,5 +17,34 @@
 
 \begin{document}
 	\maketitle
+	
+	\section*{Abstract}
+	
+	\tableofcontents
+	\newpage
+	
+	\section{Introduction}
+	% Problem statement
+	
+	\section{Methodology}
+	\subsection{Monte Carlo tree search (MCTS)}
+	In order to create an intelligent agent for the game Dots and Boxes, we started by implementing a Monte Carlo tree search algorithm in Python. We based our implementation on the existing MCTS implementation of Dieter Buys\cite{DieterBuys:MCTS}, as this implementation is in Python, very clear to read and use and easy to adapt to our own needs.
+	
+	Later we switched to Java, because Python didn't perform as good as Java for the board representation with chains that we introduced in a later stage (see Section \ref{s:optimalMoves}).
+	
+	\subsection{Early termination of simulation}
+	In the simulation step of the Monte Carlo tree search algorithm, random moves will be played until the end of a game is reached. This is done to find out at the end which player will win if these moves are played, and return this as a result of the simulation. However, it is sometimes possible to determine the winner of a game before the end of a game is reached. If one of the two players has captured more than half of the total boxes that can be captured ($rows * columns$), then this player is guaranteed to win the game. This means that the simulation can be stopped whenever the winner is decided, resulting in shorter simulations.
+	
+	\subsection{Reuse of the search tree}
+	
+	
+	\subsection{Optimal moves\label{s:optimalMoves}}
+	
+	
+	\section{Results}
 
+
+	\newpage
+	\bibliographystyle{unsrt}
+	\bibliography{final_report}
 \end{document}
