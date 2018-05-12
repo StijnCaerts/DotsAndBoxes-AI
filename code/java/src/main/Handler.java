@@ -1,22 +1,26 @@
 package main;
 
-import java.net.InetSocketAddress;
-
-import MCTS.Strategy1.Agent1;
-import MCTS.Strategy2.Agent2;
-import MCTS.Strategy3.Agent3;
+import MCTS.Strategy1.Agent1Factory;
+import MCTS.Strategy2.Agent2Factory;
+import MCTS.Strategy3.Agent3Factory;
+import MCTS2.AsyncSearchAgentFactory;
+import MCTS2.MCTSAgentFactory;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import com.google.gson.JsonParser;
+
+import java.net.InetSocketAddress;
+import java.util.HashMap;
 
 public class Handler extends WebSocketServer {
 
     public Agent agent;
     public JsonParser parser = new JsonParser();
     private static int strategy_number = -1;
+    private HashMap<WebSocket, HashMap<String, HashMap<Integer, Agent>>> agentMap;
 
     public static void main(String[] args) {
         Handler.simpleMain();
@@ -129,21 +133,30 @@ public class Handler extends WebSocketServer {
             int columns = grid.get(1).getAsInt();
             String gameId = jsonMessage.get("game").getAsString();
 
+            AgentFactory factory;
             switch (strategy_number) {
                 case 1:
-                    this.agent = new Agent1(player, timeLimit, rows, columns, gameId);
+                    factory = new Agent1Factory();
                     break;
                 case 2:
-                    this.agent = new Agent2(player, timeLimit, rows, columns, gameId);
+                    factory = new Agent2Factory();
                     break;
                 case 3:
-                    this.agent = new Agent3(player, timeLimit, rows, columns, gameId);
+                    factory = new Agent3Factory();
+                    break;
+                case 4:
+                    factory = new MCTSAgentFactory();
+                    break;
+                case 5:
+                    factory = new AsyncSearchAgentFactory();
+                    break;
                 case 0:
-                    this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
+                    factory = (int player1, double timeLimit1, int rows1, int columns1, String gameId1) -> new TestAgent(player1, timeLimit1, rows1, columns1, gameId1);
                     break;
                 default:
-                    this.agent = new MCTS2.AsyncSearchAgent(player, timeLimit, rows, columns, gameId);
+                    factory = new MCTSAgentFactory();
             }
+            this.agent = factory.create(player, timeLimit, rows, columns, gameId);
 
             // If we are player 1, respond right away
             if (this.agent.player == 0)
@@ -201,6 +214,10 @@ public class Handler extends WebSocketServer {
             e.printStackTrace();
         }
 
+    }
+
+    private void removeAllAgents(WebSocket conn) {
+        this.agentMap.remove(conn);
     }
 
 }

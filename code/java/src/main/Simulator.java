@@ -1,6 +1,5 @@
 package main;
 
-import MCTS.MCTSAgentFactory;
 import MCTS2.AsyncSearchAgentFactory;
 import board.Board;
 

@@ -29,7 +29,7 @@ public class AsyncSearchAgent extends MCTSAgent {
         super.registerAction(ownScore, opponentScore, x, y);
 
         // start asyncsearch if next user is other user
-        if(this.rootNode.board.getCurrentPlayer() != this.player) {
+        if(this.rootNode.board.hasOptimalMoves() && this.rootNode.board.getCurrentPlayer() != this.player) {
             this.searchThread = new Thread(this.asyncSearch);
             this.searchThread.start();
         }
