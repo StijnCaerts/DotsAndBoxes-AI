@@ -95,7 +95,7 @@ public class Handler extends WebSocketServer {
 
     public static void simpleMain() {
         // Please keep this one here, I can't get JSAP to work and just want to test agents sometimes :P
-        int port = 10018;
+        int port = 10021;
         WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
         System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
         server.run();
