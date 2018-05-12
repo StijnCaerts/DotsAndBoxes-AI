@@ -20,7 +20,6 @@ public class Handler extends WebSocketServer {
     public Agent agent;
     public JsonParser parser = new JsonParser();
     private static int strategy_number = -1;
-    private HashMap<WebSocket, HashMap<String, HashMap<Integer, Agent>>> agentMap;
 
     public static void main(String[] args) {
         Handler.simpleMain();
@@ -214,10 +213,6 @@ public class Handler extends WebSocketServer {
             e.printStackTrace();
         }
 
-    }
-
-    private void removeAllAgents(WebSocket conn) {
-        this.agentMap.remove(conn);
     }
 
 }
