@@ -7,7 +7,7 @@ import math.Vector;
 
 import java.util.*;
 
-public class Board implements MCTS.Board {
+public class Board {
 
     public static final int[][] neighborDirections = new int[][] {
             {1, 0},
@@ -1179,10 +1179,8 @@ public class Board implements MCTS.Board {
         return new int[] {box%this.columns, box/this.columns};
     }
 
-    // Board interface methods
-
-    @Override
     public double gameResult() {
+        // Get the result of the game, if the winner is already decided
         if(this.gameDecided()) {
             if(this.scores[0] > this.scores[1]) {
                 return 0.0d;
@@ -1196,8 +1194,10 @@ public class Board implements MCTS.Board {
         }
     }
 
-    @Override
     public boolean gameDecided() {
+        // Checks if the winner of the game is already decided
+        // The game is decided if one player has more than half of the points that can be possibly scored,
+        // or if the game is ended (the sum of the scores of both players equals the total number of points).
         int total_points = this.rows * this.columns;
         int half_points = total_points / 2;
         if(this.scores[0] + this.scores[1] == total_points) return true;
@@ -1206,58 +1206,6 @@ public class Board implements MCTS.Board {
         } else {
             return false;
         }
-    }
-
-    @Override
-    public Set<Move> getMoves() {
-        //TODO: We should make this more efficient, not feasible to create new object for every possible move at every node
-        HashSet<Move> lm = new HashSet<>();
-        for(MoveIterator it = getLegalMoveIterator(); it.hasNext(); ) {
-            int[] edgeCoords = it.getNextMove();
-            lm.add(new DBMove(edgeCoords[0], edgeCoords[1]));
-        }
-        return lm;
-    }
-
-    @Override
-    public MCTS.Board duplicate() {
-        return this.deepcopy();
-    }
-
-    @Override
-    public void playMove(Move move) {
-        DBMove dbm = (DBMove) move;
-        this.registerMove(dbm.x, dbm.y);
-    }
-
-    @Override
-    public int getNextTurnPlayer() {
-        return this.currentPlayer;
-    }
-
-    @Override
-    public Move getRandomMove() {
-        if(this.hasOptimalMoves()) {
-            int[] oms = this.getOptimalMoves();
-            int i = new Random().nextInt(oms.length);
-            int[] om = this.intToEdge(oms[i]);
-            return new DBMove(om[0], om[1]);
-        } else {
-            return MCTS.Board.super.getRandomMove();
-        }
-    }
-
-    @Override
-    public Set<Move> getOptimal() {
-        Set<Move> optimalMoves = new HashSet<>();
-        if(this.hasOptimalMoves()) {
-            int[] oms = this.getOptimalMoves();
-            for(int i = 0; i < oms.length; i++) {
-                int[] om = intToEdge(oms[i]);
-                optimalMoves.add(new DBMove(om[0], om[1]));
-            }
-        }
-        return optimalMoves;
     }
 
 }

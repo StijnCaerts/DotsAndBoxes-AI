@@ -1,15 +1,12 @@
 package main;
 
 import java.net.InetSocketAddress;
-import java.util.Iterator;
 
-import MCTS.MCTSAgent;
 import MCTS.Strategy1.Agent1;
 import MCTS.Strategy2.Agent2;
 import MCTS.Strategy3.Agent3;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.martiansoftware.jsap.*;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -47,7 +44,7 @@ public class Handler extends WebSocketServer {
                     "2: MCTS with early simulation termination\n" +
                     "3: the latter extended with search tree reuse\n" +
                     "4: the latter extended with optimal moves\n" +
-                    "5: the latter extended with increased simulation time\n" +
+                    "5: the latter extended with increased search time\n" +
                     "6: the latter extended with a neural network (default)"
             );
             jsap.registerParameter(s);
@@ -145,7 +142,7 @@ public class Handler extends WebSocketServer {
                     this.agent = new TestAgent(player, timeLimit, rows, columns, gameId);
                     break;
                 default:
-                    this.agent = new MCTS2.MCTSAgent(player, timeLimit, rows, columns, gameId);
+                    this.agent = new MCTS2.AsyncSearchAgent(player, timeLimit, rows, columns, gameId);
             }
 
             // If we are player 1, respond right away

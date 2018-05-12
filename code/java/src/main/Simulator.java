@@ -1,8 +1,7 @@
 package main;
 
-import MCTS.MCTS;
-import MCTS.MCTSAgent;
 import MCTS.MCTSAgentFactory;
+import MCTS2.AsyncSearchAgentFactory;
 import board.Board;
 
 import java.util.Arrays;
@@ -11,7 +10,8 @@ import java.util.Random;
 public class Simulator {
 
     public static void main(String[] args) {
-        int[] res = Simulator.simulate(new MCTSAgentFactory(), new MCTS2.MCTSAgentFactory(), 100, 0.5, 5, 6, 5, 5, true);
+        int[] res = Simulator.simulate(new AsyncSearchAgentFactory(), new MCTS2.MCTSAgentFactory(), 50, 0.5, 5, 6, 5, 5, true);
+        System.out.println(Arrays.toString(res));
     }
 
     public static int[] simulate(AgentFactory factory1, AgentFactory factory2, int gamesAmount, double timeLimit, int minColumns, int maxColumns, int minRows, int maxRows, boolean print) {
@@ -55,15 +55,7 @@ public class Simulator {
             // End
             res[3*(game%2) + (int) Math.signum(board.scores[1] - board.scores[0]) + 1]++;
             if (print) {
-
-                /*MCTS mcts = ((MCTSAgent) agents[0]).mcts;
-                mcts1Iterations += mcts.iterations;
-                mcts1Moves += mcts.moves;
-                System.out.println("MCTS:");
-                System.out.println("Iterations: " + mcts.iterations);
-                System.out.println("Moves: " + mcts.moves);
-                System.out.println("Average iterations/move: " + (double) mcts.iterations/mcts.moves);
-                System.out.println("Average time/iteration: " + timeLimit*mcts.moves/mcts.iterations);*/
+                
                 MCTS2.MCTSAgent mcts2 = (MCTS2.MCTSAgent) agents[1];
                 mcts2Iterations += mcts2.iterations;
                 mcts2Moves += mcts2.moves;

@@ -110,4 +110,5 @@ venv.bak/
 # Other stuff
 *.class
 java/.idea/*
-java/data/
+java/data/*
+java/out/*
