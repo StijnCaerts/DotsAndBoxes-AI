@@ -8,21 +8,35 @@ public class AlphaBeta {
     // Performs alpha-beta search on Board
     // Based on https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning#Pseudocode
 
+    public class TimeExceededException extends RuntimeException {
+
+    }
+
+    public double startTime;
+    public static final double maxTime = 5;
+
+    public AlphaBeta() {
+        this.startTime = System.nanoTime()/1000000000.0;
+    }
+
     public static int search(Board board) {
 
         // Returns -1 (player 1 wins), 0 (tie) or 1 (player 0 wins) in best outcome for current player
         boolean temp = board.recordUndo;
         board.recordUndo = true;
         int[] killerMoves = new int[board.movesLeft];
-        int res = AlphaBeta.alphaBeta(board, killerMoves, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+        int res = (new AlphaBeta()).alphaBeta(board, killerMoves, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
         board.recordUndo = temp;
         return res;
 
     }
 
-    public static int alphaBeta(Board board, int[] killerMoves, double alpha, double beta, boolean print) {
+    public int alphaBeta(Board board, int[] killerMoves, double alpha, double beta, boolean print) {
 
         // Returns -1 (player 1 wins), 0 (tie) or 1 (player 0 wins) in best outcome for current player
+
+        if (System.nanoTime()/1000000000.0 - this.startTime > 5)
+            throw new TimeExceededException();
 
         if (board.scores[0] > board.columns*board.rows/2) {
             return 1;
@@ -43,7 +57,7 @@ public class AlphaBeta {
                     // Check all optimal moves
                     int[] edgeCoords = board.intToEdge(edge);
                     board.registerMove(edgeCoords[0], edgeCoords[1]);
-                    value = Math.max(value, AlphaBeta.alphaBeta(board, killerMoves, alpha, beta, false));
+                    value = Math.max(value, alphaBeta(board, killerMoves, alpha, beta, false));
                     board.undo();
                     alpha = Math.max(alpha, value);
                     if (beta <= alpha)
@@ -62,7 +76,7 @@ public class AlphaBeta {
                             System.out.println("Processing child " + ++counter + "/" + board.movesLeft);
                         }
                         board.registerMove(edgeCoords[0], edgeCoords[1]);
-                        value = Math.max(value, AlphaBeta.alphaBeta(board, killerMoves, alpha, beta, false));
+                        value = Math.max(value, alphaBeta(board, killerMoves, alpha, beta, false));
                         board.undo();
                         alpha = Math.max(alpha, value);
                         if (beta <= alpha) {
@@ -82,7 +96,7 @@ public class AlphaBeta {
                         continue;
                     }
                     board.registerMove(edgeCoords[0], edgeCoords[1]);
-                    value = Math.max(value, AlphaBeta.alphaBeta(board, killerMoves, alpha, beta, false));
+                    value = Math.max(value, alphaBeta(board, killerMoves, alpha, beta, false));
                     board.undo();
                     alpha = Math.max(alpha, value);
                     if (beta <= alpha) {
@@ -102,7 +116,7 @@ public class AlphaBeta {
                     // Check all optimal moves
                     int[] edgeCoords = board.intToEdge(edge);
                     board.registerMove(edgeCoords[0], edgeCoords[1]);
-                    value = Math.min(value, AlphaBeta.alphaBeta(board, killerMoves, alpha, beta, false));
+                    value = Math.min(value, alphaBeta(board, killerMoves, alpha, beta, false));
                     board.undo();
                     alpha = Math.min(alpha, value);
                     if (beta <= alpha)
@@ -122,7 +136,7 @@ public class AlphaBeta {
                             System.out.println("Processing child " + ++counter + "/" + board.movesLeft);
                         }
                         board.registerMove(edgeCoords[0], edgeCoords[1]);
-                        value = Math.min(value, AlphaBeta.alphaBeta(board, killerMoves, alpha, beta, false));
+                        value = Math.min(value, alphaBeta(board, killerMoves, alpha, beta, false));
                         board.undo();
                         beta = Math.min(alpha, value);
                         if (beta <= alpha) {
@@ -142,7 +156,7 @@ public class AlphaBeta {
                         continue;
                     }
                     board.registerMove(edgeCoords[0], edgeCoords[1]);
-                    value = Math.min(value, AlphaBeta.alphaBeta(board, killerMoves, alpha, beta, false));
+                    value = Math.min(value, alphaBeta(board, killerMoves, alpha, beta, false));
                     board.undo();
                     beta = Math.min(alpha, value);
                     if (beta <= alpha) {

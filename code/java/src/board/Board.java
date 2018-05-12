@@ -1,7 +1,5 @@
 package board;
 
-import MCTS.DBMove;
-import MCTS.Move;
 import exceptions.GameStateNotDecidedException;
 import math.Vector;
 
@@ -17,8 +15,8 @@ public class Board {
     };
 
     // These don't actually limit chains on the board, just how they are presented to the heuristic
-    public static final int maxOpenChainSize = 8;
-    public static final int maxLoopSize = 4;
+    public static final int maxOpenChainSize = 18;
+    public static final int maxLoopSize = 10;
 
     // General
     public final int columns, rows;
@@ -36,6 +34,8 @@ public class Board {
     public int[][] valence; // Amount of lines next to box, starts at 0
     public Chain[][] chainAt; // Stores the chain each box belongs to, null for boxes with valence 0, 1, or 4, not null for all boxes with valence 2 or 3
     public HashSet<Chain> chains; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
+    public int boxesOutOfChains;
+    public BoardState state;
 
     // Moves
     public int movesLeft;
@@ -59,6 +59,9 @@ public class Board {
         this.valence = new int[columns][rows];
         this.chainAt = new Chain[columns][rows];
         this.chains = new HashSet<>();
+        this.boxesOutOfChains = this.columns*this.rows;
+        this.state = BoardState.START;
+
         this.movesLeft = 2*this.columns*this.rows + this.columns + this.rows;
         this.movesLeftPerColumn = new int[2*this.columns + 1];
         for(int x = 0; x < 2*this.columns + 1; x++) {
@@ -101,6 +104,10 @@ public class Board {
                 newBoard.chainAt[x][y] = chainMap.get(this.chainAt[x][y]);
             }
         }
+
+        // Copy state trackers
+        newBoard.boxesOutOfChains = this.boxesOutOfChains;
+        newBoard.state = this.state;
 
         // Copy moves
         newBoard.movesLeft = this.movesLeft;
@@ -185,7 +192,7 @@ public class Board {
 
         // Record main part of move in transaction if necessary
         if (this.recordUndo) {
-            this.currentTransaction = new Transaction(x, y, this.optimalMoves, this.currentPlayer, this.scores);
+            this.currentTransaction = new Transaction(x, y, state, this.optimalMoves, this.currentPlayer, this.scores);
         }
 
         // Update edge matrix
@@ -218,6 +225,13 @@ public class Board {
 
         // Update optimal moves
         updateOptimalMoves();
+
+        // Update state
+        if (this.state == BoardState.START && this.scores[0] + this.scores[1] > 0 && !hasOptimalMoves()) {
+            this.state = BoardState.MIDDLE;
+        } else if (this.state == BoardState.MIDDLE) {
+            this.state = BoardState.END;
+        }
 
         // If during updating no boxes were closed, switch players
         if (!this.boxClosed)
@@ -352,17 +366,31 @@ public class Board {
         // - score of other player
         // - amount of open chains of size 1 to maxOpenChainSize (inclusive),
         // - amount of loops of size 4 to maxLoopSize (inclusive)
-        double[] res = new double[2 + Board.maxOpenChainSize + Board.maxLoopSize - 3];
+        // - Whether or not chain parity is beneficial (1) or not beneficial (-1) to the current player
+        double[] res = new double[2 + Board.maxOpenChainSize + (Board.maxLoopSize - 2)/2 + 1];
         res[0] = this.scores[this.currentPlayer];
         res[1] = this.scores[(this.currentPlayer + 1)%2];
         for(Chain chain : this.chains) {
             if (chain.type == ChainType.OPEN) {
-                res[1 + Math.min(Board.maxOpenChainSize, chain.size)]++;
+                if (Board.maxOpenChainSize >= 1)
+                    res[1 + Math.min(Board.maxOpenChainSize, chain.size)]++;
+                if (chain.size >= 3) {
+                    // Increment chain parity
+                    res[res.length - 1]++;
+                }
             } else if (chain.type == ChainType.LOOP) {
-                res[-2 + Board.maxOpenChainSize + Math.min(Board.maxLoopSize, chain.size)]++;
+                if (Board.maxLoopSize >= 4)
+                    res[2 + Board.maxOpenChainSize + -2 + Math.min(Board.maxLoopSize, chain.size)/2]++;
             }
         }
+        // Calculate chain parity
+        // Player 0 wants the parity of the open chains > 3 to equal the parity of the dots
+        res[res.length - 1] = ((res[res.length - 1] + (this.rows + 1)*(this.columns + 1) + this.currentPlayer + 1)%2)*2 - 1;
         return new Vector(res);
+    }
+
+    public BoardState getState() {
+        return this.state;
     }
 
     public int getCurrentPlayer() {
@@ -384,9 +412,15 @@ public class Board {
         this.currentPlayer = transaction.currentPlayer;
         this.scores = transaction.scores;
 
+        // Undo state tracking
+        this.state = transaction.state;
+
         // Undo box valence updates
         for(int i = 0; i < transaction.boxesAmount; i++) {
             this.valence[transaction.boxCoords[i][0]][transaction.boxCoords[i][1]]--;
+            if (this.valence[transaction.boxCoords[i][0]][transaction.boxCoords[i][1]] == 1) {
+                this.boxesOutOfChains++;
+            }
         }
 
         // Undo box chain updates in reverse order
@@ -531,6 +565,8 @@ public class Board {
         if (this.valence[x][y] == 4) {
             this.boxClosed = true;
             this.scores[this.currentPlayer]++;
+        } else if (this.valence[x][y] == 2) {
+            this.boxesOutOfChains--;
         }
 
         // Update chains

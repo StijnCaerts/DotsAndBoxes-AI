@@ -1,8 +1,5 @@
 package MCTS2;
 
-import MCTS2.MCTSAgent;
-import MCTS2.Node;
-
 public class AsyncSearchAgent extends MCTSAgent {
 
     private Thread searchThread;

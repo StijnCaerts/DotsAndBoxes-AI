@@ -1,0 +1,71 @@
+Solving this game:
+Read seed -564001618
+Simulating game 0 with 9 columns, 10 rows, simulationRatio 0.8 and seed -564001618
+._._._._._. ._._._.
+| | | | | | | | | |
+._._._._._. ._._._.
+| | | | | | | | | |
+._._._._._. ._._._.
+| | | | | |        
+._._._._._. . . ._.
+| | | | | |   | | |
+._._._._._._._. ._.
+| | | | | | | |   |
+._._._._._._._. . .
+  | | | | | | |   |
+. ._._._._._._. ._.
+|   | |   | | |    
+. . ._. . ._._. . .
+|   | |   | | |   |
+._._._._._._._._._.
+| | | | | | | | | |
+._._._._._._._._._.
+| | | | | | | | |  
+._._._._._._._._. .
+Took around 772 seconds without killer heuristic.
+
+
+
+
+
+Without killer heuristic
+Finished solving 1000 games with 5-5 columns, 5-5 rows and simulationRatio 0.8
+Average solve time: 4.7962927400000023E-4
+
+With killer heuristic:
+Finished solving 1000 games with 5-5 columns, 5-5 rows and simulationRatio 0.8
+Average solve time: 4.826321979999995E-4
+
+
+
+With killer heuristic
+Finished solving 100 games with 5-5 columns, 5-5 rows and simulationRatio 0.6
+Average solve time: 2.103701530979999
+
+With killer heuristic
+Finished solving 100 games with 5-5 columns, 5-5 rows and simulationRatio 0.6
+Average solve time: 2.1614673363700003
+
+With KH
+Finished solving 1000 games with 5-5 columns, 5-5 rows and simulationRatio 0.7
+Average solve time: 0.009391414729999993
+
+Without KH
+Finished solving 1000 games with 5-5 columns, 5-5 rows and simulationRatio 0.7
+Average solve time: 0.010128408310999983
+
+
+
+
+
+From here on with KH:
+
+Finished solving 1000 games with 5-6 columns, 5-6 rows and simulationRatio 0.7
+Average solve time: 0.6700912743560008
+
+
+
+Using MCTS agents:
+
+Finished solving 100 games with 5-6 columns, 6-6 rows
+Average solve time: 1.0469232381900002

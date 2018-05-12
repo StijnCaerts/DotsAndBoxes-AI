@@ -1,0 +1,132 @@
+Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
+[2, 0, 3, 3, 0, 2]
+
+Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
+timeLimit: 0.5, columns: 5-5, rows: 5-5
+[2, 0, 3, 4, 0, 1]
+
+MCTS:
+Iterations: 19592297
+Moves: 290
+Average iterations/move: 67559.6448275862
+Average time/iteration: 7.400867800238022E-6
+MCTS2:
+Iterations: 26189738
+Moves: 310
+Average iterations/move: 84483.02580645161
+Average time/iteration: 5.9183486295281E-6
+
+Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
+timeLimit: 0.5, columns: 5-5, rows: 5-5
+[3, 0, 2, 2, 0, 3]
+MCTS:
+Iterations: 21604981
+Moves: 299
+Average iterations/move: 72257.46153846153
+Average time/iteration: 6.919700600523555E-6
+MCTS2:
+Iterations: 25899628
+Moves: 301
+Average iterations/move: 86045.2757475083
+Average time/iteration: 5.810894272303834E-6
+
+
+
+After removing "bad moves":
+
+Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
+timeLimit: 0.5, columns: 5-6, rows: 5-5
+[4, 0, 1, 2, 0, 3]
+MCTS:
+Iterations: 33594123
+Moves: 344
+Average iterations/move: 97657.33430232559
+Average time/iteration: 5.119943151961431E-6
+MCTS2:
+Iterations: 18288361
+Moves: 322
+Average iterations/move: 56796.15217391304
+Average time/iteration: 8.803413274705153E-6
+
+Simulated 100 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
+timeLimit: 0.5, columns: 5-6, rows: 5-5
+[23, 2, 25, 24, 0, 26]
+MCTS:
+Iterations: 275646062
+Moves: 3232
+Average iterations/move: 85286.52908415842
+Average time/iteration: 5.862590556436101E-6
+MCTS2:
+Iterations: 231197698
+Moves: 3373
+Average iterations/move: 68543.64008301216
+Average time/iteration: 7.294622803727051E-6
+
+
+
+After improving bad move detection:
+
+Simulated 100 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
+timeLimit: 0.5, columns: 5-6, rows: 5-5
+MCTS:
+Iterations: 253026694
+Moves: 3174
+Average iterations/move: 79718.55513547573
+Average time/iteration: 6.272065507839264E-6
+MCTS2:
+Iterations: 248243912
+Moves: 3442
+Average iterations/move: 72121.99651365486
+Average time/iteration: 6.932697709017734E-6
+
+Simulated 100 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
+timeLimit: 0.5, columns: 5-6, rows: 5-5, second agent had timeLimit 0.005
+[20, 0, 30, 25, 0, 25]
+MCTS:
+Iterations: 241782237
+Moves: 3128
+Average iterations/move: 77296.11157289002
+Average time/iteration: 6.468630695976231E-6
+MCTS2:
+Iterations: 2005097
+Moves: 3378
+Average iterations/move: 593.5751924215513
+Average time/iteration: 8.423532627099837E-4
+
+
+
+After adding ANN:
+
+Simulated 100 games in between class MCTS2.MCTSAgentFactory and class MCTS3.MCTSAgentFactory
+timeLimit: 0.5, columns: 6-6, rows: 5-6
+[31, 0, 19, 26, 1, 23]
+MCTS2:
+Iterations: 216648439
+Moves: 3927
+Average iterations/move: 55168.94295900178
+Average time/iteration: 9.063070147484422E-6
+MCTS3:
+Iterations: 226467946
+Moves: 3875
+Average iterations/move: 58443.340903225806
+Average time/iteration: 8.555294619928243E-6
+[31, 0, 19, 26, 1, 23]
+
+Simulated 100 games in between class MCTS2.MCTSAgentFactory and class MCTS3.MCTSAgentFactory
+timeLimit: 0.5, columns: 6-6, rows: 5-6
+[29, 1, 20, 27, 0, 23]
+MCTS2:
+Iterations: 215585134
+Moves: 3879
+Average iterations/move: 55577.50296468162
+Average time/iteration: 8.99644592377135E-6
+MCTS3:
+Iterations: 230790295
+Moves: 3832
+Average iterations/move: 60227.112473903966
+Average time/iteration: 8.301908882260408E-6
+[29, 1, 20, 27, 0, 23]
+
+Total:
+[60, 1, 39, 53, 1, 46]
+[113, 2, 87]

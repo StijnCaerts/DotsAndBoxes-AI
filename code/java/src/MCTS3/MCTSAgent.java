@@ -1,21 +1,26 @@
-package MCTS2;
+package MCTS3;
 
+import ann.ANN;
 import board.Board;
+import board.BoardState;
 import main.Agent;
 
 import java.util.*;
 
 public class MCTSAgent extends Agent {
 
+    public static final String annPath = "final_ann";
     Node rootNode;
     Random rand; // All random decisions are based on this object, so can be seeded for determinism
     public int iterations = 0;
     public int moves = 0;
+    ANN ann;
 
     public MCTSAgent(int player, double timeLimit, int rows, int columns, String gameId) {
         super(player, timeLimit, rows, columns, gameId);
         this.rootNode = new Node(new Board(columns, rows, false));
         this.rand = new Random();
+        this.ann = ANN.load(MCTSAgent.annPath);
     }
 
     @Override
@@ -92,11 +97,25 @@ public class MCTSAgent extends Agent {
 
         Board boardCopy = board.deepcopy();
         int move = boardCopy.getNextAcceptableMove(this.rand);
-        while(move != 0 && !boardCopy.gameDecided()) {
+        while(move != 0 && !boardCopy.gameDecided() && boardCopy.getState() != BoardState.MIDDLE) {
             boardCopy.registerMove(move);
             move = boardCopy.getNextAcceptableMove(this.rand);
         }
-        return boardCopy.gameResult();
+
+        // Return score
+        // 0 means the first player wins, 1 means the second player wins
+        if (boardCopy.getState() == BoardState.MIDDLE) {
+            // Estimate score using ANN heuristic
+            double output = this.ann.predict(boardCopy.getHeuristicInput()); // Close to 1 means current player should win, close to -1 means other player should win
+            if (boardCopy.getCurrentPlayer() == 0) {
+                return (-output + 1)/2;
+            } else {
+                return (output + 1)/2;
+            }
+        } else {
+            // We played till the end, just use the board outcome
+            return boardCopy.gameResult();
+        }
 
     }
 

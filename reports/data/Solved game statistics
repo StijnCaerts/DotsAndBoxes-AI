@@ -1,0 +1,115 @@
+Solver:
+Finished solving 1000 games with 5-6 columns, 5-6 rows and simulationRatio 0.7
+Average solve time: 0.6700912743560008
+
+Average input vector:
+[8.927, 7.471, 2.656, 1.423, 0.593, 0.249, 0.138, 0.056, 0.029, 0.013000000000000001, 0.007, 0.005, 0.026000000000000002, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0]
+
+Score0	Score1
+8.927	7.471
+Chain type	1		2		3		4		5		6		7		8		9		10
+OPEN		2.656	1.423	0.593	0.249	0.138	0.056	0.029	0.013	0.007	0.005
+LOOP								0.026	0.0		0.001	0.0		0.0		0.0		0.0
+
+Setting maxOpenChainSize to 8
+Setting maxLoopSize to 4
+
+New average input vector:
+[8.927, 7.471, 2.656, 1.423, 0.593, 0.249, 0.138, 0.056, 0.029, 0.025, 0.027]
+
+000001, 0.007, 0.005, 0.026000000000000002, 0.0, 0.001, 0.0, 0.0, 0.0, 0.0]
+
+Score0	Score1
+8.927	7.471
+Chain type	1		2		3		4		5		6		7		8
+OPEN		2.656	1.423	0.593	0.249	0.138	0.056	0.029	0.025
+LOOP								0.027
+
+
+
+Problem: examples have a bias towards letting player 0 win:
+average output = 0.944
+Solution: randomly switch examples when loading (res -> -res and scores are switched)
+
+
+wins, ties, losses:
+503, 0, 497
+
+Not a single tie!
+
+
+
+
+More data!
+
+Finished solving 4000 games with 5-6 columns, 5-6 rows and simulationRatio 0.7
+Average solve time: 0.6148019771847499
+
+
+
+
+
+Using MCTS agents, playing till midgame:
+
+
+[1.6300000000000001, 1.76,
+1.1, 1.28, 0.87, 0.6900000000000001, 0.33, 0.36, 0.26, 0.17, 0.17, 0.16, 0.17, 0.05, 0.08, 0.04, 0.14,
+0.13, 0.0, 0.06, 0.0, 0.01, 0.0, 0.02, 0.0, 0.0, 0.0, 0.0, 0.01,
+-0.04]
+-0.04
+48, 0, 52
+Chain parity heuristic correctness:0.56
+
+
+Average input:
+[1.58, 1.81,
+1.1, 1.28, 0.87, 0.6900000000000001, 0.33, 0.36, 0.26, 0.17, 0.17, 0.16, 0.17, 0.05, 0.08, 0.04, 0.14,
+0.13, 0.06, 0.01, 0.02, 0.0, 0.0, 0.01,
+-0.1]
+Average output: -0.14
+43, 0, 57
+Chain parity heuristic correctness: 0.56
+
+After setting maxopen to 14 and maxloop to 6
+Average input: [1.7, 1.69, 1.1, 1.28, 0.87, 0.6900000000000001, 0.33, 0.36, 0.26, 0.17, 0.17, 0.16, 0.17, 0.05, 0.08, 0.18, 0.13, 0.1, -0.12]
+Average output: 0.0
+50, 0, 50
+Chain parity heuristic correctness: 0.56
+
+
+
+
+
+Solving 1000 games with random seeds
+
+Finished solving 250 games with 5-6 columns, 6-6 rows
+Average solve time: 0.993540877616
+Finished solving 250 games with 5-6 columns, 6-6 rows
+Average solve time: 1.132633954156
+Finished solving 250 games with 5-6 columns, 6-6 rows
+Average solve time: 1.1151851829239996
+Finished solving 250 games with 5-6 columns, 6-6 rows
+Average solve time: 1.0560405509680004
+
+Loaded 1000 solved games.
+Average input: [1.87, 1.98, 1.141, 1.237, 0.909, 0.627, 0.434, 0.354, 0.262, 0.244, 0.15, 0.139, 0.08, 0.09, 0.054, 0.16, 0.161, 0.073, 0.05]
+Average output: -0.019
+486, 0, 514
+Chain parity heuristic correctness: 0.512
+
+Loaded 1000 solved games.
+Average input:
+[1.958, 1.8920000000000001,
+1.141, 1.237, 0.909, 0.627, 0.434, 0.354, 0.262, 0.244, 0.15, 0.139, 0.08, 0.09, 0.054, 0.048, 0.034, 0.027, 0.017, 0.003, 0.014, 0.007, 0.005, 0.002, 0.0, 0.002, 0.001,
+0.161, 0.043000000000000003, 0.021, 0.006, 0.003, 0.0, 0.0, 0.0, 0.0,
+-0.03]
+Average output: 0.015
+503, 0, 497
+Chain parity heuristic correctness: 0.512
+
+Setting maxopen to 18 and maxloop to 10
+Loaded 1000 solved games.
+Average input: [1.901, 1.949, 1.141, 1.237, 0.909, 0.627, 0.434, 0.354, 0.262, 0.244, 0.15, 0.139, 0.08, 0.09, 0.054, 0.048, 0.034, 0.027, 0.017, 0.034, 0.161, 0.043000000000000003, 0.021, 0.009000000000000001, -0.002]
+Average output: -0.021
+485, 0, 515
+Chain parity heuristic correctness: 0.512

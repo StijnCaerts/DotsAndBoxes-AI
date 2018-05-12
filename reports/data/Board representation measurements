@@ -1,0 +1,101 @@
+Verified invariants after every move:
+- 100 games of 10-100 by 10-100
+- 10000 games of 5-10 by 5-10
+- 100000 games of 5-10 by 5-10
+- 100000 games of 5-10 by 5-10
+- 1000000 games of 5-10 by 5-10
+
+
+
+Measured time to update board representation based on move and to copy board
+
+10000 games of 5-10 by 5-10:
+Global average move registration time: 3.1041727445569585E-7
+Global average board copy time: 9.630140156074681E-6
+
+100000 games of 5-10 by 5-10:
+Global average move registration time: 2.5795822955283315E-7
+Global average board copy time: 9.41372599323898E-6
+
+
+
+After adding optimal move updating:
+
+100000 games of 5-10 by 5-10:
+Average board copy time: 1.0304751759035132E-5
+Average move registration time (including optimal move updating): 3.464364562829316E-7
+Average optimal move updating time: 6.908853465740483E-8
+
+1000000 games of 5-10 by 5-10:
+Average board copy time: 1.1050446713189029E-5
+Average move registration time (including optimal move updating): 3.631310870220412E-7
+Average optimal move updating time: 7.432701141729609E-8
+
+
+
+Did some optimal move updating condition fixes and added undo:
+
+100000 games of 5-10 by 5-10 (recordUndo = false):
+Average board copy time: 5.001359614091E-6 * 2
+Average undo time: 0.0
+Average move registration time (including optimal move updating): 3.4182168287107025E-7
+Average optimal move updating time: 6.619141544102333E-8
+
+100000 games of 5-10 by 5-10 (recordUndo = true):
+Average board copy time: 1.1406364099843117E-5
+Average undo time: 2.5450269783281486E-7
+Average move registration time (including optimal move updating): 4.927025983300123E-7
+Average optimal move updating time: 7.019689443246108E-8
+
+
+
+Skipping undo loops if recordUndo = false:
+
+100000 games of 5-10 by 5-10 (recordUndo = false):
+Average board copy time: 5.302429964724556E-6 * 2
+Average undo time: 0.0
+Average move registration time (including optimal move updating): 3.4918224703710296E-7
+Average optimal move updating time: 6.84654747877181E-8
+
+100000 games of 5-10 by 5-10 (recordUndo = false)
+Average board copy time: 1.0523050636484732E-5
+Average undo time: 0.0
+Average move registration time (including optimal move updating): 3.511451218009649E-7
+Average optimal move updating time: 6.81716406004163E-8
+
+
+
+After adding getHeuristicInput:
+
+Average board copy time: 1.0601800503747496E-5
+Average undo time: 0.0
+Average move registration time (including optimal move updating): 3.4097647818523447E-7
+Average optimal move updating time: 6.705996096480453E-8
+Average heuristic input calculation time: 1.8079025628850336E-7
+
+
+
+After switching to legalMovesList:
+
+Average board copy time: 1.387328905974812E-5
+Average undo time: 3.1703787611864916E-7
+Average move registration time (including optimal move updating): 5.623428054742207E-7
+Average optimal move updating time: 6.894987263402259E-8
+Average heuristic input calculation time: 1.8613587520862968E-7
+
+
+
+After switching to column representation:
+
+Average board copy time: 4.408496137018547E-6
+Average undo time: 1.9017215137674944E-7
+Average move registration time (including optimal move updating): 4.498267099127496E-7
+Average optimal move updating time: 7.038340703067798E-8
+Average heuristic input calculation time: 1.8134914927297294E-7
+
+Verified 10000 games with 5-10 columns 5-10 rows.
+Average board copy time: 4.472954546868607E-6
+Average undo time: 2.0002495128962494E-7
+Average move registration time (including optimal move updating): 4.4194184643744664E-7
+Average optimal move updating time: 7.211878288670664E-8
+Average heuristic input calculation time: 1.8379046330113262E-7
