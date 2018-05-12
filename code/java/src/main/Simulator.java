@@ -36,7 +36,7 @@ public class Simulator {
             Board board = new Board(columns, rows, false);
             Agent[] agents = new Agent[] {
                     factory1.create(game%2, timeLimit, rows, columns, Integer.toString(game)),
-                    factory2.create((game + 1)%2, timeLimit, rows, columns, Integer.toString(game))
+                    factory2.create((game + 1)%2, timeLimit/100, rows, columns, Integer.toString(game))
             };
 
             // Simulation
@@ -54,14 +54,7 @@ public class Simulator {
             // End
             res[3*(game%2) + (int) Math.signum(board.scores[1] - board.scores[0]) + 1]++;
             if (print) {
-                MCTS2.AsyncSearchAgent mcts = (MCTS2.AsyncSearchAgent) agents[0];
-                mcts1Iterations += mcts.iterations;
-                mcts1Moves += mcts.moves;
-                System.out.println("MCTS:");
-                System.out.println("Iterations: " + mcts.iterations);
-                System.out.println("Moves: " + mcts.moves);
-                System.out.println("Average iterations/move: " + (double) mcts.iterations/mcts.moves);
-                System.out.println("Average time/iteration: " + timeLimit*mcts.moves/mcts.iterations);
+                
                 MCTS2.MCTSAgent mcts2 = (MCTS2.MCTSAgent) agents[1];
                 mcts2Iterations += mcts2.iterations;
                 mcts2Moves += mcts2.moves;

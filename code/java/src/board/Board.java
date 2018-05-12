@@ -454,6 +454,11 @@ public class Board {
             }
         }
 
+        if (this.chains.size() == 1) {
+            // End of game, just take the last boxes
+            chainToPlay = (validHalfOpenChain != null ? validHalfOpenChain : validClosedChain);
+        }
+
         if (chainToPlay != null) {
 
             // Play in this chain right away, no choice required
