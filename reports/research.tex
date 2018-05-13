@@ -1,18 +1,18 @@
 \section{Research questions}
-\paragraph{Which strategy for game playing do you use?} The strategy used for playing is Monte Carlo tree search, extended with the different optimisations discussed in Section \ref{s:mcts}.
+\paragraph{Which strategy for game playing do you use?} See all of section 2.
 	
-\paragraph{Which data representation do you use?} Board representation is discussed in Section \ref{s:board}.
+\paragraph{Which data representation do you use?} See section 2.1.
 
-\paragraph{Which machine learning model(s) do you use to represent the game state?} We use an Artificial Neural Network, as discussed in Section \ref{s:ann}.
+\paragraph{Which machine learning model(s) do you use to represent the game state?} We do not use machine learning to represent the game state. The board representation is updated using an extensive but "classical" algorithm.
 	
 \paragraph{How do you force a decision within a given time limit?} The search in the Monte Carlo search tree for a move is a iterative process, that can be stopped when the time limit is reached. Because we want to take some small overhead time into account, we reduced the time limit with 0.02 seconds to make sure the decision is made in time.
 	
 \paragraph{How will you evaluate your solution?} Evaluation is described in Section \ref{s:evaluation}.
 	
-\paragraph{What is the computational and memory cost of preprocessing, learning and evaluating?} % TODO
+\paragraph{What is the computational and memory cost of preprocessing, learning and evaluating?} Generating games took us an average of 40 seconds in the second approach, since we gave both agents a realistic timeframe per move (0.5s). Learning convered within a couple of seconds during all experiments. Evaluating the heuristic takes very little time: calculating the input heuristic takes about $2*10^{-7}$s, putting it through the ANN even less (this just consists of a couple of small matrix operations).
 	
 \paragraph{Can you represent and learn to recognize the concept of chains, a popular strategy in ``Dots and Boxes''?} Yes, as described in Section \ref{s:chains}.
 	
 \paragraph{How does your best game playing strategy compare to your other strategies (performance)?} A comparison of our different playing strategies can be found in Section \ref{s:evaluationOwn}.
 	
-\paragraph{What is the performance/time/space trade-off between your different strategies?} Agent 1 until 3 use a basic board representation that only records the edges that have been played and the score of the players. The board representation used in Agent 4-6 can represent chains and stores more data. The first board representation has a lower time complexity when registering a move, but has a higher time complexity when it is asked for all the moves that can be played from that board. The reverse is true for the second board representation.
+\paragraph{What is the performance/time/space trade-off between your different strategies?} See the various comparisons made throughout the report. Since space usage wasn't a relevant constraint, we didn't analyze this.
