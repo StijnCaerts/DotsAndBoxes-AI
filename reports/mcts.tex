@@ -15,9 +15,8 @@
 	We don't expect the increase in performance of using this optimization to be large, because the branching factor of a game of Dots and Boxes is very high. A lot of information that was valuable for the deciding the previous move, is no longer relevant thanks to this high branching factor. Only the part of the tree that was explored in the direction of this particular node is still relevant for a next search process.
 	
 	\subsubsection{Optimal moves\label{s:optimalMoves}}
-	% TODO bespreking chains
-	
 	The use of optimal moves, which can be derived from the chains on the board, allows us to reduce the search space drastically. We no longer use totally random moves in the simulation of gameplay, but only use random optimal moves if these are present. Also in the expansion of a node in the search tree, we only consider optimal moves, which reduces the branching factor.
 	An important assumption at this point is that an opponent will play as an intelligent agent, and will not just play random moves. 
 	
 	\subsubsection{Increased search time}
+	In the current design, the agent only thinks for a next move when it is asked for the best move, and must respond when the time limit is reached. We can increase the search time by also continuing the search while the opponent has to make a move. To make this feasible, the branching factor can't be too high, because there would be too much uncertainty of which move the opponent would play. The branching factor can be reduced when we consider optimal moves, as described in Section \ref{s:optimalMoves}.
