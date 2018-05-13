@@ -103,7 +103,11 @@ public class Simulator {
             }
 
             // End
-            res[3*(game%2) + (int) Math.signum(board.scores[1] - board.scores[0]) + 1]++;
+            if (game%2 == 0) {
+                res[(int) Math.signum(board.scores[1] - board.scores[0]) + 1]++;
+            } else {
+                res[3 + (int) Math.signum(board.scores[0] - board.scores[1]) + 1]++;
+            }
             if (print) {
 
                 MCTS2.MCTSAgent mcts2 = (MCTS2.MCTSAgent) agents[0];
