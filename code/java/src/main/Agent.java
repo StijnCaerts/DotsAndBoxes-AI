@@ -10,7 +10,8 @@ public abstract class Agent {
     public Agent(int player, double timeLimit, int rows, int columns, String gameId) {
         // first player has index 0
         this.player = player;
-        this.timeLimit = timeLimit;
+        // use time limit margin of 0.02 seconds
+        this.timeLimit = timeLimit - 0.02;
         this.rows = rows;
         this.columns = columns;
         this.gameId = gameId;
