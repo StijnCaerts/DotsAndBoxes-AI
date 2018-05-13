@@ -1,4 +1,4 @@
-\subsection{Monte Carlo tree search (MCTS)}
+\subsection{Monte Carlo tree search (MCTS)\label{s:mcts}}
 	In order to create an intelligent agent for the game Dots and Boxes, we started by implementing a Monte Carlo tree search algorithm in Python. We based our implementation on the existing MCTS implementation of Dieter Buys\cite{DieterBuys:MCTS}, as this implementation is in Python, very clear to read and use and easy to adapt to our own needs.
 	
 	Later we switched to Java, because Python didn't perform as good as Java for the board representation with chains that we introduced in a later stage (see Section \ref{s:optimalMoves}). We translated the Python code we had at that moment to a Java implementation, and continued from there on with the Java code. Based in this code, we made some optimizations, which are described in the following sections.
