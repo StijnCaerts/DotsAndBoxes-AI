@@ -10,6 +10,7 @@ import MCTS.Board;
 import static java.lang.Math.log;
 import static java.lang.Math.sqrt;
 
+// Based on https://github.com/DieterBuys/mcts-player
 public class Node {
     Node parent;
     public Move move;

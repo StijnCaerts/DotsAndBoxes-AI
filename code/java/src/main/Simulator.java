@@ -1,16 +1,67 @@
 package main;
 
+import MCTS.Strategy1.Agent1Factory;
+import MCTS.Strategy2.Agent2Factory;
+import MCTS.Strategy3.Agent3Factory;
 import board.Board;
 
+import java.io.*;
 import java.util.Arrays;
 import java.util.Random;
 
 public class Simulator {
 
-    public static void main(String[] args) {
-        int[] res = Simulator.simulate(new MCTS2.MCTSAgentFactory(), new MCTS3.MCTSAgentFactory(), 100, 0.5, 6, 6, 5, 6,
-                true);
-        System.out.println(Arrays.toString(res));
+    public static void main(String[] args) throws IOException {
+        int[] res;
+        String filename = "simulations.txt";
+        int gamesAmount = 100;
+        double timelimit = 0.5;
+
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));;
+        String simulationStage;
+
+        for(int size = 6; size <= 7; size++) {
+            simulationStage = "Simulating Strategy1 vs Strategy2, size: " + Integer.toString(size);
+            writer.println(simulationStage);
+            writer.close();
+            System.out.println(simulationStage);
+            res = Simulator.simulate(new Agent1Factory(), new Agent2Factory(), gamesAmount, timelimit, size, size, size, size, false);
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+            writer.println(Arrays.toString(res));
+
+            simulationStage = "Simulating Strategy2 vs Strategy3, size: " + Integer.toString(size);
+            writer.println(simulationStage);
+            writer.close();
+            System.out.println(simulationStage);
+            res = Simulator.simulate(new Agent2Factory(), new Agent3Factory(), gamesAmount, timelimit, size, size, size, size, false);
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+            writer.println(Arrays.toString(res));
+
+            simulationStage = "Simulating Strategy3 vs MCTS2, size: " + Integer.toString(size);
+            writer.println(simulationStage);
+            writer.close();
+            System.out.println(simulationStage);
+            res = Simulator.simulate(new Agent3Factory(), new MCTS2.MCTSAgentFactory(), gamesAmount, timelimit, size, size, size, size, false);
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+            writer.println(Arrays.toString(res));
+
+            simulationStage = "Simulating MCTS2 vs MCTS3, size: " + Integer.toString(size);
+            writer.println(simulationStage);
+            writer.close();
+            System.out.println(simulationStage);
+            res = Simulator.simulate(new MCTS2.MCTSAgentFactory(), new MCTS3.MCTSAgentFactory(), gamesAmount, timelimit, size, size, size, size, false);
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+            writer.println(Arrays.toString(res));
+
+            simulationStage = "Simulating MCTS2 vs MCTS2Async, size: " + Integer.toString(size);
+            writer.println(simulationStage);
+            writer.close();
+            System.out.println(simulationStage);
+            res = Simulator.simulate(new MCTS2.MCTSAgentFactory(), new MCTS2.AsyncSearchAgentFactory(), gamesAmount, timelimit, size, size, size, size, false);
+            writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+            writer.println(Arrays.toString(res));
+        }
+        writer.close();
     }
 
     public static int[] simulate(AgentFactory factory1, AgentFactory factory2, int gamesAmount, double timeLimit, int minColumns, int maxColumns, int minRows, int maxRows, boolean print) {
@@ -40,7 +91,7 @@ public class Simulator {
             };
 
             // Simulation
-            if (print) {
+            if (true) {
                 System.out.println("Simulating game " + game + " with " + columns + " columns and " + rows + " rows");
             }
             while (board.movesLeft > 0) {

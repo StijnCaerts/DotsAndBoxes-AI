@@ -5,6 +5,7 @@ import MCTS.Move;
 
 import java.util.*;
 
+// Based on https://github.com/DieterBuys/mcts-player
 public class MCTS {
 
     private Node rootNode;
@@ -75,7 +76,7 @@ public class MCTS {
 
             iterations++;
         }
-        System.out.println("Iterations: " + iterations);
+        // System.out.println("Iterations: " + iterations);
 
         // return most visited node's move
         Optional<Node> opt = this.rootNode.children.stream().max(Comparator.comparingInt(c -> c.plays));
