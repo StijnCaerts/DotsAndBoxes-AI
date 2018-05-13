@@ -1,9 +1,12 @@
+rEVERSED ALL RESULTS IN SECOND HALF OF VECTOR
+
+
 Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
-[2, 0, 3, 3, 0, 2]
+[2, 0, 3, 2, 0, 3]
 
 Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
 timeLimit: 0.5, columns: 5-5, rows: 5-5
-[2, 0, 3, 4, 0, 1]
+[2, 0, 3, 1, 0, 4]
 
 MCTS:
 Iterations: 19592297
@@ -18,7 +21,7 @@ Average time/iteration: 5.9183486295281E-6
 
 Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
 timeLimit: 0.5, columns: 5-5, rows: 5-5
-[3, 0, 2, 2, 0, 3]
+[3, 0, 2, 3, 0, 2]
 MCTS:
 Iterations: 21604981
 Moves: 299
@@ -36,7 +39,7 @@ After removing "bad moves":
 
 Simulated 10 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
 timeLimit: 0.5, columns: 5-6, rows: 5-5
-[4, 0, 1, 2, 0, 3]
+[4, 0, 1, 3, 0, 2]
 MCTS:
 Iterations: 33594123
 Moves: 344
@@ -50,7 +53,7 @@ Average time/iteration: 8.803413274705153E-6
 
 Simulated 100 games in between class MCTS.MCTSAgentFactory and class MCTS2.MCTSAgentFactory
 timeLimit: 0.5, columns: 5-6, rows: 5-5
-[23, 2, 25, 24, 0, 26]
+[23, 2, 25, 26, 0, 24]
 MCTS:
 Iterations: 275646062
 Moves: 3232
@@ -99,7 +102,7 @@ After adding ANN:
 
 Simulated 100 games in between class MCTS2.MCTSAgentFactory and class MCTS3.MCTSAgentFactory
 timeLimit: 0.5, columns: 6-6, rows: 5-6
-[31, 0, 19, 26, 1, 23]
+[31, 0, 19, 23, 1, 26]
 MCTS2:
 Iterations: 216648439
 Moves: 3927
@@ -110,11 +113,11 @@ Iterations: 226467946
 Moves: 3875
 Average iterations/move: 58443.340903225806
 Average time/iteration: 8.555294619928243E-6
-[31, 0, 19, 26, 1, 23]
+[31, 0, 19, 23, 1, 26]
 
 Simulated 100 games in between class MCTS2.MCTSAgentFactory and class MCTS3.MCTSAgentFactory
 timeLimit: 0.5, columns: 6-6, rows: 5-6
-[29, 1, 20, 27, 0, 23]
+[29, 1, 20, 23, 0, 27]
 MCTS2:
 Iterations: 215585134
 Moves: 3879
@@ -125,8 +128,8 @@ Iterations: 230790295
 Moves: 3832
 Average iterations/move: 60227.112473903966
 Average time/iteration: 8.301908882260408E-6
-[29, 1, 20, 27, 0, 23]
+[29, 1, 20, 23, 0, 27]
 
 Total:
-[60, 1, 39, 53, 1, 46]
-[113, 2, 85]
+[60, 1, 39, 46, 1, 53]
+[106, 2, 94]
