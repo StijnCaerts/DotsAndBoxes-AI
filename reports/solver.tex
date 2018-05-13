@@ -1,1 +1,3 @@
 \subsection{Solver}
+
+To generate the data set for the ANN, we need to exactly calculate the outcome of certain board situations, which we accomplished using alpha-beta search. Like in the paper by Barker and Korf \cite{Barker:2012:SD:2900728.2900788}, we used optimal moves to limit the search space. As an optimization, we also tried to apply the killer heuristic [REFERENCE TO \url{https://en.wikipedia.org/wiki/Killer_heuristic}] and compared its performance on 1000 games (generated using the method from section 2.3.1), which led to a decrease from 0.01s per game to 0.009 per game. We're not sure if this change is even statistically significant, however since we don't have any evidence to believe the heuristic hurts either, we kept it regardless.
