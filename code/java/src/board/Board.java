@@ -34,7 +34,6 @@ public class Board {
     public int[][] valence; // Amount of lines next to box, starts at 0
     public Chain[][] chainAt; // Stores the chain each box belongs to, null for boxes with valence 0, 1, or 4, not null for all boxes with valence 2 or 3
     public HashSet<Chain> chains; // Mostly used for adding/removing instead of iteration, so HashSet instead of ArrayList
-    public int boxesOutOfChains;
     public BoardState state;
 
     // Moves
@@ -59,7 +58,6 @@ public class Board {
         this.valence = new int[columns][rows];
         this.chainAt = new Chain[columns][rows];
         this.chains = new HashSet<>();
-        this.boxesOutOfChains = this.columns * this.rows;
         this.state = BoardState.START;
 
         this.movesLeft = 2 * this.columns * this.rows + this.columns + this.rows;
@@ -106,7 +104,6 @@ public class Board {
         }
 
         // Copy state trackers
-        newBoard.boxesOutOfChains = this.boxesOutOfChains;
         newBoard.state = this.state;
 
         // Copy moves
@@ -418,9 +415,6 @@ public class Board {
         // Undo box valence updates
         for (int i = 0; i < transaction.boxesAmount; i++) {
             this.valence[transaction.boxCoords[i][0]][transaction.boxCoords[i][1]]--;
-            if (this.valence[transaction.boxCoords[i][0]][transaction.boxCoords[i][1]] == 1) {
-                this.boxesOutOfChains++;
-            }
         }
 
         // Undo box chain updates in reverse order
@@ -565,8 +559,6 @@ public class Board {
         if (this.valence[x][y] == 4) {
             this.boxClosed = true;
             this.scores[this.currentPlayer]++;
-        } else if (this.valence[x][y] == 2) {
-            this.boxesOutOfChains--;
         }
 
         // Update chains

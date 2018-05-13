@@ -1,1 +1,27 @@
 \subsection{Board representation}
+
+\subsubsection{Chains}
+
+One of the most basic concepts in "Dots and boxes" strategy is the concept of chains, so we decided to create a board representation which explicitly keeps track of these. We define the valence of a box as the amount of lines (edges) around it. We say two boxes are connected if they are adjacent and have no edge in between. We define a chain as a series of connected boxes with valence two or three. All boxes with valence 2 or 3 are part of exactly one chain, all other boxes are part of no chains. Each chain also has a type:
+\begin{itemize}
+\item Closed: starts and ends in a box of valence three.
+\item Half-open: starts with a box of valence three and ends with a box of valence two. \item Open: starts and ends with a box of valence two but doesn't connect back to itself.
+\item Loop: starts and ends with a box of valence two but does connect back to itself.
+\end{itemize}
+This categorization is important, since closed and half-open chains both give rise to some optimal moves, while open chains and loops have the potential to become half-open and closed chains respectively.
+
+\subsubsection{Data structures}
+
+Every move, our board updates several data structures:
+
+\begin{itemize}
+\item edges: a 2D array tracking what edges have been filled in.
+\item valence: a 2D array tracking the valence of each box.
+\item chainAt: a 2D array tracking what chain (or no chain) every box is part of.
+\item chains: keeps track of all the chains currently on the board. Each chain has a list of its member boxes, a size and a type. Although we sometimes iterate over this (like when calculating optimal moves), we opted to use a hash-set instead of a dynamic array since we also often have to add/remove elements.
+\item state: tracks the board state. This is initialized to START, goes to MIDDLE the first time when boxes have been filled in and there are no optimal moves on the board at the moment and goes to END one move afterwards.
+\item movesLeft: tracks the amount of moves left in total.
+\item movesLeftPerColumn: a 1D array tracking the amount of moves left per column. This is used for fast move iteration/random move generation.
+\item optimalMoves: a 1D array which stores 0, 1 or 2 optimal moves. Although we re-calculate this completely (based on the chain data structures) every move, this isn't a big issue since it only requires iterating over (in the worst case) all chains, which is a pretty small number compared to the board size in almost all scenarios.
+\item undoStack: a dynamic array which (if the board is recording undos) stores transactions which allow us to reverse every move.
+\end{itemize}
