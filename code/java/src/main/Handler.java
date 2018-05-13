@@ -65,9 +65,9 @@ public class Handler extends WebSocketServer {
 
         JSAPResult config = jsap.parse(args);
 
-        if(!config.success() || config.getBoolean("help")) {
+        if (!config.success() || config.getBoolean("help")) {
             System.err.println();
-            for(Iterator errs = config.getErrorMessageIterator(); errs.hasNext();) {
+            for (Iterator errs = config.getErrorMessageIterator(); errs.hasNext(); ) {
                 System.err.println("Error: " + errs.next());
             }
 
@@ -80,7 +80,7 @@ public class Handler extends WebSocketServer {
         }
 
         int config_strategy_number = config.getInt("strategy");
-        if(config_strategy_number >= 0 && config_strategy_number <= 6) {
+        if (config_strategy_number >= 0 && config_strategy_number <= 6) {
             strategy_number = config_strategy_number;
         } else {
             strategy_number = 6;
@@ -173,11 +173,11 @@ public class Handler extends WebSocketServer {
             int score1 = scores.get(0).getAsInt();
             int score2 = scores.get(1).getAsInt();
             int ownScore = scores.get(this.agent.player).getAsInt();
-            int opponentScore = scores.get((this.agent.player + 1)%2).getAsInt();
+            int opponentScore = scores.get((this.agent.player + 1) % 2).getAsInt();
             JsonArray location = jsonMessage.get("location").getAsJsonArray();
             String orientation = jsonMessage.get("orientation").getAsString();
-            int x = 2*location.get(1).getAsInt() + (orientation.equals("h") ? 1 : 0);
-            int y = 2*location.get(0).getAsInt() + (orientation.equals("v") ? 1 : 0);
+            int x = 2 * location.get(1).getAsInt() + (orientation.equals("h") ? 1 : 0);
+            int y = 2 * location.get(0).getAsInt() + (orientation.equals("v") ? 1 : 0);
 
             this.agent.registerAction(ownScore, opponentScore, x, y);
 
@@ -210,7 +210,7 @@ public class Handler extends WebSocketServer {
             int[] move = this.agent.getNextMove();
             int x = move[0];
             int y = move[1];
-            String message = "{\"type\": \"action\", \"location\": [" + Integer.toString(y/2) + ", " + Integer.toString(x/2) + "], \"orientation\": " + (x%2 == 0 ? "\"v\"" : "\"h\"") + "}";
+            String message = "{\"type\": \"action\", \"location\": [" + Integer.toString(y / 2) + ", " + Integer.toString(x / 2) + "], \"orientation\": " + (x % 2 == 0 ? "\"v\"" : "\"h\"") + "}";
             conn.send(message);
         } catch (Exception e) {
             e.printStackTrace();

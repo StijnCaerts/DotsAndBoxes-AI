@@ -23,7 +23,7 @@ public class Transaction {
         this.y = y;
         this.state = state;
         this.optimalMoves = optimalMoves; // We don't copy this because Board creates a new array for this every update anyway
-        this.scores = new int[] {scores[0], scores[1]};
+        this.scores = new int[]{scores[0], scores[1]};
         this.currentPlayer = currentPlayer;
     }
 

@@ -42,28 +42,28 @@ public class RandomMoveGenerator {
             return null;
         } else {
             int index = rand.nextInt(this.movesLeft);
-            for(int x = 0; x < 2*this.board.columns + 1; x++) {
+            for (int x = 0; x < 2 * this.board.columns + 1; x++) {
                 if (index >= this.movesLeftPerColumn[x]) {
                     // Move is not in this column, move on
                     index -= this.movesLeftPerColumn[x];
                     continue;
                 } else {
                     // Move is in this column, iterate through rows
-                    for(int y = (x + 1)%2; y < 2*this.board.rows + 1; y += 2) {
+                    for (int y = (x + 1) % 2; y < 2 * this.board.rows + 1; y += 2) {
                         if (!this.board.edges[x][y] && !this.generatedMoves.contains(this.board.edgeToInt(x, y))) {
                             // Edge is open on board and hasn't been generated as an earlier move yet
                             if (index == 0) {
                                 this.movesLeft--;
                                 this.movesLeftPerColumn[x]--;
                                 this.generatedMoves.add(this.board.edgeToInt(x, y));
-                                return new int[] {x, y};
+                                return new int[]{x, y};
                             }
                             index--;
                         }
                     }
                 }
             }
-            assert(false);
+            assert (false);
             return null;
         }
     }

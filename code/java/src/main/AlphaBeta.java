@@ -16,7 +16,7 @@ public class AlphaBeta {
     public static final double maxTime = 5;
 
     public AlphaBeta() {
-        this.startTime = System.nanoTime()/1000000000.0;
+        this.startTime = System.nanoTime() / 1000000000.0;
     }
 
     public static int search(Board board) {
@@ -35,13 +35,13 @@ public class AlphaBeta {
 
         // Returns -1 (player 1 wins), 0 (tie) or 1 (player 0 wins) in best outcome for current player
 
-        if (System.nanoTime()/1000000000.0 - this.startTime > 5)
+        if (System.nanoTime() / 1000000000.0 - this.startTime > 5)
             throw new TimeExceededException();
 
-        if (board.scores[0] > board.columns*board.rows/2) {
+        if (board.scores[0] > board.columns * board.rows / 2) {
             return 1;
         }
-        if (board.scores[1] > board.columns*board.rows/2) {
+        if (board.scores[1] > board.columns * board.rows / 2) {
             return -1;
         }
         if (board.movesLeft == 0) {
@@ -53,7 +53,7 @@ public class AlphaBeta {
             // Maximizing player
             int value = Integer.MIN_VALUE;
             if (board.hasOptimalMoves()) {
-                for(int edge : board.getOptimalMoves()) {
+                for (int edge : board.getOptimalMoves()) {
                     // Check all optimal moves
                     int[] edgeCoords = board.intToEdge(edge);
                     board.registerMove(edgeCoords[0], edgeCoords[1]);
@@ -85,7 +85,7 @@ public class AlphaBeta {
                     }
                 }
 
-                for(MoveIterator it = board.getLegalMoveIterator(); it.hasNext(); ) {
+                for (MoveIterator it = board.getLegalMoveIterator(); it.hasNext(); ) {
                     // Check all legal moves except for killer move
                     if (print) {
                         System.out.println("Processing child " + ++counter + "/" + board.movesLeft);
@@ -112,7 +112,7 @@ public class AlphaBeta {
             // Minimizing player
             int value = Integer.MAX_VALUE;
             if (board.hasOptimalMoves()) {
-                for(int edge : board.getOptimalMoves()) {
+                for (int edge : board.getOptimalMoves()) {
                     // Check all optimal moves
                     int[] edgeCoords = board.intToEdge(edge);
                     board.registerMove(edgeCoords[0], edgeCoords[1]);
@@ -145,7 +145,7 @@ public class AlphaBeta {
                     }
                 }
 
-                for(MoveIterator it = board.getLegalMoveIterator(); it.hasNext(); ) {
+                for (MoveIterator it = board.getLegalMoveIterator(); it.hasNext(); ) {
                     // Check all legal moves except for killer move
                     if (print) {
                         System.out.println("Processing child " + ++counter + "/" + board.movesLeft);

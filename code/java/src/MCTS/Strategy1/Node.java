@@ -1,11 +1,12 @@
 package MCTS.Strategy1;
 
+import MCTS.Board;
+import MCTS.Move;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import MCTS.Move;
-import MCTS.Board;
 
 import static java.lang.Math.log;
 import static java.lang.Math.sqrt;
@@ -57,10 +58,10 @@ public class Node {
     }
 
     double getScore(double result, int player) {
-        if(result == 0.5) {
+        if (result == 0.5) {
             return result;
         }
-        if(player != (int) result) {
+        if (player != (int) result) {
             return 0.0;
         } else {
             return 1.0;

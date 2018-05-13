@@ -1,8 +1,8 @@
 package MCTS.Strategy2;
 
-import main.Agent;
 import MCTS.DBMove;
 import MCTS.Move;
+import main.Agent;
 
 public class Agent2 extends Agent {
 
@@ -17,7 +17,7 @@ public class Agent2 extends Agent {
 
     @Override
     public void registerAction(int ownScore, int opponentScore, int x, int y) {
-        this.gs.playMove(new DBMove(x,y));
+        this.gs.playMove(new DBMove(x, y));
     }
 
     @Override

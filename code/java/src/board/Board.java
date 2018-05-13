@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Board {
 
-    public static final int[][] neighborDirections = new int[][] {
+    public static final int[][] neighborDirections = new int[][]{
             {1, 0},
             {0, -1},
             {-1, 0},
@@ -54,16 +54,16 @@ public class Board {
         this.recordUndo = recordUndo;
 
         // Board representation initialization
-        this.edges = new boolean[2*columns + 1][2*rows + 1];
+        this.edges = new boolean[2 * columns + 1][2 * rows + 1];
         this.valence = new int[columns][rows];
         this.chainAt = new Chain[columns][rows];
         this.chains = new HashSet<>();
         this.state = BoardState.START;
 
-        this.movesLeft = 2*this.columns*this.rows + this.columns + this.rows;
-        this.movesLeftPerColumn = new int[2*this.columns + 1];
-        for(int x = 0; x < 2*this.columns + 1; x++) {
-            this.movesLeftPerColumn[x] = this.rows + x%2;
+        this.movesLeft = 2 * this.columns * this.rows + this.columns + this.rows;
+        this.movesLeftPerColumn = new int[2 * this.columns + 1];
+        for (int x = 0; x < 2 * this.columns + 1; x++) {
+            this.movesLeftPerColumn[x] = this.rows + x % 2;
         }
         this.optimalMoves = new int[0];
 
@@ -78,26 +78,26 @@ public class Board {
         // Copy rows, columns, current player and scores
         Board newBoard = new Board(this.columns, this.rows, this.recordUndo);
         newBoard.currentPlayer = this.currentPlayer;
-        newBoard.scores = new int[] {this.scores[0], this.scores[1]};
+        newBoard.scores = new int[]{this.scores[0], this.scores[1]};
 
         // Copy edges
-        for(int x = 0; x < 2*this.columns + 1; x++) {
-            for(int y = (x + 1)%2; y < 2*this.rows + 1; y += 2) {
+        for (int x = 0; x < 2 * this.columns + 1; x++) {
+            for (int y = (x + 1) % 2; y < 2 * this.rows + 1; y += 2) {
                 newBoard.edges[x][y] = this.edges[x][y];
             }
         }
 
         // Copy chains
         HashMap<Chain, Chain> chainMap = new HashMap<>();
-        for(Chain chain : this.chains) {
+        for (Chain chain : this.chains) {
             Chain newChain = new Chain(new ArrayList<>(chain.boxes), chain.type);
             newBoard.chains.add(newChain);
             chainMap.put(chain, newChain); // Tested, copying ArrayList<Integer> like this works, and enum is immutable so can't be copied
         }
 
         // Copy valence and chainAt matrix
-        for(int x = 0; x < this.columns; x++) {
-            for(int y = 0; y < this.rows; y++) {
+        for (int x = 0; x < this.columns; x++) {
+            for (int y = 0; y < this.rows; y++) {
                 newBoard.valence[x][y] = this.valence[x][y];
                 newBoard.chainAt[x][y] = chainMap.get(this.chainAt[x][y]);
             }
@@ -131,18 +131,18 @@ public class Board {
 
         // Converts this edges matrix to a human-readable string
         String res = "";
-        for(int y = 0; y < 2*this.rows + 1; y++) {
-            for(int x = 0; x < 2*this.columns + 1; x++) {
-                if (x%2 == 0 && y%2 == 0) {
+        for (int y = 0; y < 2 * this.rows + 1; y++) {
+            for (int x = 0; x < 2 * this.columns + 1; x++) {
+                if (x % 2 == 0 && y % 2 == 0) {
                     // Node
                     res += ".";
-                } else if (x%2 == 1 && y%2 == 1) {
+                } else if (x % 2 == 1 && y % 2 == 1) {
                     // Box
                     res += " ";
                 } else {
                     // Edges
                     if (this.edges[x][y]) {
-                        if (y%2 == 0) {
+                        if (y % 2 == 0) {
                             // Horizontal edge
                             res += "_";
                         } else {
@@ -154,7 +154,7 @@ public class Board {
                     }
                 }
             }
-            if (y != 2*this.rows)
+            if (y != 2 * this.rows)
                 res += "\n";
         }
         return res;
@@ -163,7 +163,7 @@ public class Board {
 
     public int[] intToEdge(int edge) {
         // Converts an int ID to a edge
-        return new int[] {edge%(2*this.columns + 1), edge/(2*this.columns + 1)};
+        return new int[]{edge % (2 * this.columns + 1), edge / (2 * this.columns + 1)};
     }
 
     public int edgeToInt(int[] edge) {
@@ -172,7 +172,7 @@ public class Board {
 
     public int edgeToInt(int x, int y) {
         // Converts a edge to an int ID
-        return y*(2*this.columns + 1) + x;
+        return y * (2 * this.columns + 1) + x;
     }
 
     public void registerMove(int move) {
@@ -202,21 +202,21 @@ public class Board {
         // Update valence matrix
         this.boxClosed = false;
         this.chainSplit = false;
-        if (x%2 == 0) {
+        if (x % 2 == 0) {
             // Vertical edge, increase valence of left and right boxes
-            if (x/2 - 1 >= 0) {
-                boxUpdate(x/2 - 1, y/2);
+            if (x / 2 - 1 >= 0) {
+                boxUpdate(x / 2 - 1, y / 2);
             }
-            if (x/2 < this.columns) {
-                boxUpdate(x/2, y/2);
+            if (x / 2 < this.columns) {
+                boxUpdate(x / 2, y / 2);
             }
         } else {
             // Horizontal edge, increase valence of top and bottom boxes
-            if (y/2 - 1 >= 0) {
-                boxUpdate(x/2, y/2 - 1);
+            if (y / 2 - 1 >= 0) {
+                boxUpdate(x / 2, y / 2 - 1);
             }
-            if (y/2 < this.rows) {
-                boxUpdate(x/2, y/2);
+            if (y / 2 < this.rows) {
+                boxUpdate(x / 2, y / 2);
             }
         }
 
@@ -232,7 +232,7 @@ public class Board {
 
         // If during updating no boxes were closed, switch players
         if (!this.boxClosed)
-            this.currentPlayer = (this.currentPlayer + 1)%2;
+            this.currentPlayer = (this.currentPlayer + 1) % 2;
 
         // Push current transaction if necessary
         if (this.recordUndo) {
@@ -264,24 +264,24 @@ public class Board {
             return null;
         } else {
             int index = rand.nextInt(this.movesLeft);
-            for(int x = 0; x < 2*this.columns + 1; x++) {
+            for (int x = 0; x < 2 * this.columns + 1; x++) {
                 if (index >= this.movesLeftPerColumn[x]) {
                     // Move is not in this column, move on
                     index -= this.movesLeftPerColumn[x];
                     continue;
                 } else {
                     // Move is in this column, iterate through rows
-                    for(int y = (x + 1)%2; y < 2*this.rows + 1; y += 2) {
+                    for (int y = (x + 1) % 2; y < 2 * this.rows + 1; y += 2) {
                         if (!this.edges[x][y]) {
                             if (index == 0) {
-                                return new int[] {x, y};
+                                return new int[]{x, y};
                             }
                             index--;
                         }
                     }
                 }
             }
-            assert(false);
+            assert (false);
             return null;
         }
     }
@@ -303,7 +303,7 @@ public class Board {
 
             // Generate random legal move
             int move = 0;
-            for(int i = 0; i < 100; i++) {
+            for (int i = 0; i < 100; i++) {
                 move = getRandomLegalMoveAsInt(rand);
                 if (!isBad(move))
                     break;
@@ -317,7 +317,7 @@ public class Board {
 
         // Checks if move is bad
         // Current heuristic: don't create half-open or closed chains in the first 50% of the game
-        if ((double) this.movesLeft/(2*this.columns*this.rows + this.columns + this.rows) < 0.5) {
+        if ((double) this.movesLeft / (2 * this.columns * this.rows + this.columns + this.rows) < 0.5) {
             return false;
         } else {
 
@@ -326,24 +326,24 @@ public class Board {
             int y = edgeCoords[1];
 
             // Simulate registerMove and boxUpdate but only do checks we need to check if chain was opened
-            if (x%2 == 0) {
+            if (x % 2 == 0) {
                 // Vertical edge, increase valence of left and right boxes
-                if (x/2 - 1 >= 0) {
-                    if (isBoxUpdateBad(x/2 - 1, y/2))
+                if (x / 2 - 1 >= 0) {
+                    if (isBoxUpdateBad(x / 2 - 1, y / 2))
                         return true;
                 }
-                if (x/2 < this.columns) {
-                    if (isBoxUpdateBad(x/2, y/2))
+                if (x / 2 < this.columns) {
+                    if (isBoxUpdateBad(x / 2, y / 2))
                         return true;
                 }
             } else {
                 // Horizontal edge, increase valence of top and bottom boxes
-                if (y/2 - 1 >= 0) {
-                    if (isBoxUpdateBad(x/2, y/2 - 1))
+                if (y / 2 - 1 >= 0) {
+                    if (isBoxUpdateBad(x / 2, y / 2 - 1))
                         return true;
                 }
-                if (y/2 < this.rows) {
-                    if (isBoxUpdateBad(x/2, y/2))
+                if (y / 2 < this.rows) {
+                    if (isBoxUpdateBad(x / 2, y / 2))
                         return true;
                 }
             }
@@ -364,10 +364,10 @@ public class Board {
         // - amount of open chains of size 1 to maxOpenChainSize (inclusive),
         // - amount of loops of size 4 to maxLoopSize (inclusive)
         // - Whether or not chain parity is beneficial (1) or not beneficial (-1) to the current player
-        double[] res = new double[2 + Board.maxOpenChainSize + (Board.maxLoopSize - 2)/2 + 1];
+        double[] res = new double[2 + Board.maxOpenChainSize + (Board.maxLoopSize - 2) / 2 + 1];
         res[0] = this.scores[this.currentPlayer];
-        res[1] = this.scores[(this.currentPlayer + 1)%2];
-        for(Chain chain : this.chains) {
+        res[1] = this.scores[(this.currentPlayer + 1) % 2];
+        for (Chain chain : this.chains) {
             if (chain.type == ChainType.OPEN) {
                 if (Board.maxOpenChainSize >= 1)
                     res[1 + Math.min(Board.maxOpenChainSize, chain.size)]++;
@@ -377,12 +377,12 @@ public class Board {
                 }
             } else if (chain.type == ChainType.LOOP) {
                 if (Board.maxLoopSize >= 4)
-                    res[2 + Board.maxOpenChainSize + -2 + Math.min(Board.maxLoopSize, chain.size)/2]++;
+                    res[2 + Board.maxOpenChainSize + -2 + Math.min(Board.maxLoopSize, chain.size) / 2]++;
             }
         }
         // Calculate chain parity
         // Player 0 wants the parity of the open chains > 3 to equal the parity of the dots
-        res[res.length - 1] = ((res[res.length - 1] + (this.rows + 1)*(this.columns + 1) + this.currentPlayer + 1)%2)*2 - 1;
+        res[res.length - 1] = ((res[res.length - 1] + (this.rows + 1) * (this.columns + 1) + this.currentPlayer + 1) % 2) * 2 - 1;
         return new Vector(res);
     }
 
@@ -413,12 +413,12 @@ public class Board {
         this.state = transaction.state;
 
         // Undo box valence updates
-        for(int i = 0; i < transaction.boxesAmount; i++) {
+        for (int i = 0; i < transaction.boxesAmount; i++) {
             this.valence[transaction.boxCoords[i][0]][transaction.boxCoords[i][1]]--;
         }
 
         // Undo box chain updates in reverse order
-        for(int i = transaction.subTransactions.size() - 1; i >= 0; i--) {
+        for (int i = transaction.subTransactions.size() - 1; i >= 0; i--) {
             SubTransaction subTransaction = transaction.subTransactions.get(i);
             subTransaction.undo();
         }
@@ -442,7 +442,7 @@ public class Board {
         Chain validHalfOpenChain = null;
         Chain validClosedChain = null;
         Chain chainToPlay = null;
-        for(Chain chain : this.chains) {
+        for (Chain chain : this.chains) {
 
             if ((chain.type == ChainType.HALF_OPEN && chain.size != 2) || (chain.type == ChainType.CLOSED && chain.size != 4)) {
 
@@ -494,15 +494,15 @@ public class Board {
                 // Just play in between box 0 and 1
                 int[] boxCoords1 = intToBox(chainToPlay.boxes.get(0));
                 int[] boxCoords2 = intToBox(chainToPlay.boxes.get(1));
-                this.optimalMoves = new int[] {edgeToInt(boxCoords1[0] + boxCoords2[0] + 1, boxCoords1[1] + boxCoords2[1] + 1)};
+                this.optimalMoves = new int[]{edgeToInt(boxCoords1[0] + boxCoords2[0] + 1, boxCoords1[1] + boxCoords2[1] + 1)};
             } else {
                 // Chain is half-open and has size 1
                 int[] boxCoords = intToBox(chainToPlay.boxes.get(0));
-                for(int[] neighborDirection : Board.neighborDirections) {
-                    int x = 2*boxCoords[0] + 1 + neighborDirection[0];
-                    int y = 2*boxCoords[1] + 1 + neighborDirection[1];
+                for (int[] neighborDirection : Board.neighborDirections) {
+                    int x = 2 * boxCoords[0] + 1 + neighborDirection[0];
+                    int y = 2 * boxCoords[1] + 1 + neighborDirection[1];
                     if (!this.edges[x][y]) {
-                        this.optimalMoves = new int[] {edgeToInt(x, y)};
+                        this.optimalMoves = new int[]{edgeToInt(x, y)};
                         break;
                     }
                 }
@@ -518,9 +518,9 @@ public class Board {
             int[] boxCoords = intToBox((validHalfOpenChain != null ? validHalfOpenChain : validClosedChain).boxes.get(1));
             this.optimalMoves = new int[2];
             int i = 0;
-            for(int[] neighborDirection : Board.neighborDirections) {
-                int x = 2*boxCoords[0] + 1 + neighborDirection[0];
-                int y = 2*boxCoords[1] + 1 + neighborDirection[1];
+            for (int[] neighborDirection : Board.neighborDirections) {
+                int x = 2 * boxCoords[0] + 1 + neighborDirection[0];
+                int y = 2 * boxCoords[1] + 1 + neighborDirection[1];
                 if (!this.edges[x][y]) {
                     this.optimalMoves[i++] = edgeToInt(x, y);
                     if (i == 2)
@@ -552,7 +552,7 @@ public class Board {
         // Increase valence
         this.valence[x][y]++;
         if (this.recordUndo) {
-            this.currentTransaction.boxCoords[this.currentTransaction.boxesAmount++] = new int[] {x, y};
+            this.currentTransaction.boxCoords[this.currentTransaction.boxesAmount++] = new int[]{x, y};
         }
 
         // Check if a box is made
@@ -564,7 +564,7 @@ public class Board {
         // Update chains
         int box = boxToInt(x, y);
         int x2, y2;
-        switch(this.valence[x][y]) {
+        switch (this.valence[x][y]) {
 
             case 2:
 
@@ -577,7 +577,7 @@ public class Board {
                 y2 = -1;
                 int x3 = -1;
                 int y3 = -1;
-                for(int[] neighborDirection : Board.neighborDirections) {
+                for (int[] neighborDirection : Board.neighborDirections) {
                     // Iterate through neighboring boxes
                     int nx = x + neighborDirection[0];
                     int ny = y + neighborDirection[1];
@@ -596,7 +596,7 @@ public class Board {
 
                 // Update chains as required
                 Chain chain;
-                switch(neighboringChains) {
+                switch (neighboringChains) {
                     case 0:
                         // Box simply becomes open chain by itself
                         chain = new Chain(box, ChainType.OPEN);
@@ -771,7 +771,7 @@ public class Board {
                 chain = this.chainAt[x][y];
                 int index = chain.boxes.indexOf(box); // Own position in chain;
                 int splitIndex;
-                switch(chain.type) {
+                switch (chain.type) {
                     case OPEN:
 
                         this.openedChain = true;
@@ -842,7 +842,7 @@ public class Board {
 
                         // Find neighboring connected box
                         int neighborBox = -1;
-                        for(int[] neighborDirection : Board.neighborDirections) {
+                        for (int[] neighborDirection : Board.neighborDirections) {
                             // Iterate through neighboring boxes
                             int nx = x + neighborDirection[0];
                             int ny = y + neighborDirection[1];
@@ -854,7 +854,7 @@ public class Board {
 
                         // Rotate boxes to make sure the list starts and ends with the right boxes
                         int shift;
-                        if (chain.boxes.get((index + 1)%chain.size) == neighborBox) {
+                        if (chain.boxes.get((index + 1) % chain.size) == neighborBox) {
                             // Same ordering
                             // Rotate list so that box is in front
                             shift = -index;
@@ -1050,7 +1050,7 @@ public class Board {
                         index = chain.boxes.indexOf(box); // Own position in chain;
                         int[] neighborCoords = intToBox(chain.boxes.get(index == 0 ? 1 : chain.size - 2));
                         int actualNeighborValence = 0; // May not equal valence stored in matrix because the box still needs to be updated
-                        for(int[] neighborDirection : Board.neighborDirections) {
+                        for (int[] neighborDirection : Board.neighborDirections) {
                             if (this.edges[2 * neighborCoords[0] + 1 + neighborDirection[0]][2 * neighborCoords[1] + 1 + neighborDirection[1]]) {
                                 actualNeighborValence++;
                             }
@@ -1109,12 +1109,12 @@ public class Board {
         // reverse indicates order in which boxes are prepended, not order in which they will end up in the main chain
         if (reverse) {
             // Add in reverse order
-            for(int i = add.size - 1; i >= 0; i--) {
+            for (int i = add.size - 1; i >= 0; i--) {
                 main.prepend(add.boxes.get(i));
             }
         } else {
             // Add in same order
-            for(int i = 0; i < add.size; i++) {
+            for (int i = 0; i < add.size; i++) {
                 main.prepend(add.boxes.get(i));
             }
         }
@@ -1123,12 +1123,12 @@ public class Board {
     protected static void appendChain(Chain main, Chain add, boolean reverse) {
         if (reverse) {
             // Add in reverse order
-            for(int i = add.size - 1; i >= 0; i--) {
+            for (int i = add.size - 1; i >= 0; i--) {
                 main.append(add.boxes.get(i));
             }
         } else {
             // Add in same order
-            for(int i = 0; i < add.size; i++) {
+            for (int i = 0; i < add.size; i++) {
                 main.append(add.boxes.get(i));
             }
         }
@@ -1151,7 +1151,7 @@ public class Board {
         // Marks all boxes in toBeMarked as part of marker in the chainAt table and then removes toBeMarked from the set of chains
         // marker can be null, toBeMarked cannot be null
         // Mark correct chain in chainAt table
-        for(int i = 0; i < toBeMarked.size; i++) {
+        for (int i = 0; i < toBeMarked.size; i++) {
             int addedBox = toBeMarked.boxes.get(i);
             int[] addedBoxCoords = intToBox(addedBox);
             this.chainAt[addedBoxCoords[0]][addedBoxCoords[1]] = marker;
@@ -1167,8 +1167,8 @@ public class Board {
         // In case of an open chain of size 1, the splitIndex can be 0 or 1 since the order is irrelevant at this point
 
         // Check for split in middle of chain
-        for(int i = 0; i < 2; i++) {
-            int testIndex = index + 2*i - 1;
+        for (int i = 0; i < 2; i++) {
+            int testIndex = index + 2 * i - 1;
             if (testIndex >= 0 && testIndex < chain.size) {
                 int[] neighborCoords = intToBox(chain.boxes.get(testIndex));
                 if (!boxesConnected(x, y, neighborCoords[0], neighborCoords[1]))
@@ -1182,7 +1182,7 @@ public class Board {
             return chain.size;
         } else {
             // Chain must (have been) open, check both sides
-            for(int i = 0; i < chain.size; i += chain.size - 1) {
+            for (int i = 0; i < chain.size; i += chain.size - 1) {
                 int[] boxCoords = intToBox(chain.boxes.get(i));
                 if (this.valence[boxCoords[0]][boxCoords[1]] == 3) {
                     return (i > 0 ? chain.size : 0);
@@ -1192,25 +1192,25 @@ public class Board {
             }
         }
 
-        assert(false);
+        assert (false);
         return -1;
     }
 
     protected int boxToInt(int x, int y) {
         // Converts a box to an int ID
         // Used to store boxes as an ArrayList in the Chain class
-        return y*this.columns + x;
+        return y * this.columns + x;
     }
 
     protected int[] intToBox(int box) {
         // Converts an int ID to a box
-        return new int[] {box%this.columns, box/this.columns};
+        return new int[]{box % this.columns, box / this.columns};
     }
 
     public double gameResult() {
         // Get the result of the game, if the winner is already decided
-        if(this.gameDecided()) {
-            if(this.scores[0] > this.scores[1]) {
+        if (this.gameDecided()) {
+            if (this.scores[0] > this.scores[1]) {
                 return 0.0d;
             } else if (this.scores[1] > this.scores[0]) {
                 return 1.0d;
@@ -1228,8 +1228,8 @@ public class Board {
         // or if the game is ended (the sum of the scores of both players equals the total number of points).
         int total_points = this.rows * this.columns;
         int half_points = total_points / 2;
-        if(this.scores[0] + this.scores[1] == total_points) return true;
-        if(this.scores[0] > half_points || this.scores[1] > half_points) {
+        if (this.scores[0] + this.scores[1] == total_points) return true;
+        if (this.scores[0] > half_points || this.scores[1] > half_points) {
             return true;
         } else {
             return false;

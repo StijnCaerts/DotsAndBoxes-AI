@@ -23,13 +23,13 @@ public class MoveIterator {
     public int[] getNextMove() {
         // Yields the next legal move
         if (hasNext()) {
-            while(true) {
+            while (true) {
                 if (!this.board.edges[this.x][this.y]) {
                     int prevX = this.x;
                     int prevY = this.y;
                     this.count++;
                     nextPos();
-                    return new int[] {prevX, prevY};
+                    return new int[]{prevX, prevY};
                 }
                 nextPos();
             }
@@ -39,10 +39,10 @@ public class MoveIterator {
 
     private void nextPos() {
         this.y += 2;
-        if (this.y >= 2*board.rows + 1) {
+        if (this.y >= 2 * board.rows + 1) {
             // Shift to next column
             this.x++;
-            this.y = (this.x + 1)%2;
+            this.y = (this.x + 1) % 2;
         }
     }
 

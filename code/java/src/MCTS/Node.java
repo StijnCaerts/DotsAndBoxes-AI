@@ -24,7 +24,7 @@ public class Node {
         this.parent = parent;
         this.move = move;
 
-        if(this.board.hasOptimalMoves()) {
+        if (this.board.hasOptimalMoves()) {
             this.pendingMoves = new ArrayList<>(board.getOptimal());
         } else {
             this.pendingMoves = new ArrayList<>(board.getMoves());
@@ -58,10 +58,10 @@ public class Node {
     }
 
     double getScore(double result, int player) {
-        if(result == 0.5) {
+        if (result == 0.5) {
             return result;
         }
-        if(player != (int) result) {
+        if (player != (int) result) {
             return 0.0;
         } else {
             return 1.0;

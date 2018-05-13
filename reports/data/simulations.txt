@@ -8,6 +8,16 @@ Simulating MCTS2 vs MCTS3, size: 5
 [25, 0, 25, 25, 0, 25]
 Simulating MCTS2 vs MCTS2Async, size: 5
 [30, 0, 20, 25, 0, 25]
+Simulating Strategy1 vs Strategy2, size: 6
+[19, 0, 31, 30, 0, 20]
+Simulating Strategy2 vs Strategy3, size: 6
+[24, 0, 26, 30, 0, 20]
+Simulating Strategy3 vs MCTS2, size: 6
+[0, 0, 50, 50, 0, 0]
+Simulating MCTS2 vs MCTS3, size: 6
+[26, 0, 24, 27, 1, 22]
+Simulating MCTS2 vs MCTS2Async, size: 6
+[28, 0, 22, 22, 0, 28]
 
 
 MCTS2 vs http://dotsandboxes.org/, size: 5

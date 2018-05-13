@@ -1,17 +1,16 @@
 package ann;
 
-import board.Board;
 import math.Matrix;
 import math.Vector;
-import sun.misc.IOUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -43,19 +42,19 @@ public class ANN {
 
         int inputSize = this.hiddenWeights.width;
         int hiddenSize = this.hiddenWeights.height;
-        ByteBuffer buffer = ByteBuffer.allocate(2*4 + 8*inputSize*hiddenSize + 8*hiddenSize);
+        ByteBuffer buffer = ByteBuffer.allocate(2 * 4 + 8 * inputSize * hiddenSize + 8 * hiddenSize);
         buffer.putInt(inputSize);
         buffer.putInt(hiddenSize);
 
         // Write hidden weights
-        for(int x = 0; x < inputSize; x++) {
-            for(int y = 0; y < hiddenSize; y++) {
+        for (int x = 0; x < inputSize; x++) {
+            for (int y = 0; y < hiddenSize; y++) {
                 buffer.putDouble(this.hiddenWeights.values[x][y]);
             }
         }
 
         // Write output weights
-        for(int x = 0; x < hiddenSize; x++) {
+        for (int x = 0; x < hiddenSize; x++) {
             buffer.putDouble(this.outputWeights.values[x][0]);
         }
 
@@ -82,14 +81,14 @@ public class ANN {
             ann = new ANN(inputSize, hiddenSize);
 
             // Read hidden weights
-            for(int x = 0; x < inputSize; x++) {
-                for(int y = 0; y < hiddenSize; y++) {
+            for (int x = 0; x < inputSize; x++) {
+                for (int y = 0; y < hiddenSize; y++) {
                     buffer.putDouble(ann.hiddenWeights.values[x][y]);
                 }
             }
 
             // Read output weights
-            for(int x = 0; x < hiddenSize; x++) {
+            for (int x = 0; x < hiddenSize; x++) {
                 buffer.putDouble(ann.outputWeights.values[x][0]);
             }
 
@@ -110,7 +109,7 @@ public class ANN {
 
     public static Vector activation(Vector vector) {
         // Applies the activation function to an entire vector in-place
-        for(int i = 0; i < vector.height; i++) {
+        for (int i = 0; i < vector.height; i++) {
             vector.values[i] = ANN.activation(vector.values[i]);
         }
         return vector;
@@ -147,7 +146,7 @@ public class ANN {
         long start = System.nanoTime();
 
         // Input normalization
-        for(Example example : trainingSet) {
+        for (Example example : trainingSet) {
             example.input.normalize();
         }
 
@@ -160,7 +159,7 @@ public class ANN {
         int iteration = 0;
         int round = 0;
         double lastSave = 0;
-        while(true) {
+        while (true) {
 
             Matrix prevHiddenWeights = null, prevOutputWeights = null;
             if (validationSet != null) {
@@ -173,22 +172,22 @@ public class ANN {
                 double validationAccuracy = ANN.accuracy(this, validationSet);
 
                 // Save current ANN periodically
-                if (System.nanoTime()/1000000000.0 > lastSave + 1) {
+                if (System.nanoTime() / 1000000000.0 > lastSave + 1) {
                     System.out.println("Results after round " + round + ":");
                     System.out.println("Training set RMSE: " + trainingRMSE);
                     System.out.println("Validation set RMSE: " + validationRMSE);
                     System.out.println("Training set accuracy: " + trainingAccuracy);
                     System.out.println("Validation set accuracy: " + validationAccuracy);
                     save(annBasePath + round);
-                    lastSave = System.nanoTime()/1000000000.0;
+                    lastSave = System.nanoTime() / 1000000000.0;
 
                     System.out.println("Hidden weights");
-                    for(int x = 0; x < this.hiddenWeights.width; x++) {
+                    for (int x = 0; x < this.hiddenWeights.width; x++) {
                         System.out.println((new Vector(this.hiddenWeights.values[x])).norm() + " " + Arrays.toString(this.hiddenWeights.values[x]));
                     }
                     System.out.println("Output weights");
                     System.out.println("[");
-                    for(int x = 0; x < this.outputWeights.width; x++) {
+                    for (int x = 0; x < this.outputWeights.width; x++) {
                         System.out.print(this.outputWeights.values[x][0] + ", ");
                     }
                     System.out.println("]\n");
@@ -235,7 +234,7 @@ public class ANN {
 
 
             // Go through all examples
-            for(Example example : trainingSet) {
+            for (Example example : trainingSet) {
 
                 // Calculate outputs
                 Vector hiddenInput = this.hiddenWeights.multiply(example.input);
@@ -248,14 +247,14 @@ public class ANN {
                 double outputDerivative = ANN.dactivation(finalInput);
 
                 // Adjust output weights and calculate requested hidden change
-                Matrix requestedHiddenChange = this.outputWeights.deepcopy().multiply(predictionError*outputDerivative); // Row matrix, like output weights
-                for(int i = 0; i < this.outputWeights.width; i++)
-                    this.outputWeights.values[i][0] += ANN.stepSize*predictionError*hiddenOutput.values[i];
+                Matrix requestedHiddenChange = this.outputWeights.deepcopy().multiply(predictionError * outputDerivative); // Row matrix, like output weights
+                for (int i = 0; i < this.outputWeights.width; i++)
+                    this.outputWeights.values[i][0] += ANN.stepSize * predictionError * hiddenOutput.values[i];
 
                 // Back-propagate requested hidden change to adjust hidden weights
-                for(int i = 0; i < this.hiddenWeights.width; i++) {
-                    for(int j = 0; j < this.hiddenWeights.height; j++) {
-                        this.hiddenWeights.values[i][j] += ANN.stepSize*requestedHiddenChange.values[j][0]*ANN.dactivation(hiddenInput.values[j])*example.input.values[i];
+                for (int i = 0; i < this.hiddenWeights.width; i++) {
+                    for (int j = 0; j < this.hiddenWeights.height; j++) {
+                        this.hiddenWeights.values[i][j] += ANN.stepSize * requestedHiddenChange.values[j][0] * ANN.dactivation(hiddenInput.values[j]) * example.input.values[i];
                     }
                 }
 
@@ -284,7 +283,7 @@ public class ANN {
         }
 
         if (validationSet == null) {
-            System.out.println((System.nanoTime() - start)/1000000000.0);
+            System.out.println((System.nanoTime() - start) / 1000000000.0);
             System.out.println("Stopped training after " + iteration + " iterations.");
         }
 
@@ -308,7 +307,7 @@ public class ANN {
 
         // Print initial analysis, then train, then print new analysis
         ANN.printRMSEs(model, trainingSet, validationSet);
-        model.train(trainingSet, null,  null,null);
+        model.train(trainingSet, null, null, null);
         ANN.printRMSEs(model, trainingSet, validationSet);
 
     }
@@ -318,9 +317,9 @@ public class ANN {
         // Generates examples based on an ann.ANN
         Example[] examples = new Example[amount];
         Random rand = new Random();
-        for(int i = 0; i < amount; i++) {
+        for (int i = 0; i < amount; i++) {
             double[] inputValues = new double[inputSize];
-            for(int j = 0; j < inputSize; j++)
+            for (int j = 0; j < inputSize; j++)
                 inputValues[j] = rand.nextGaussian();
             Vector input = new Vector(inputValues);
             examples[i] = new Example(input, real.predict(input));
@@ -341,10 +340,10 @@ public class ANN {
 
         // Calculates the RMSE of this ann on this set of examples
         double total = 0;
-        for(Example example : examples) {
+        for (Example example : examples) {
             total += Math.pow(example.output - ann.predict(example.input), 2);
         }
-        return Math.sqrt(total/examples.length);
+        return Math.sqrt(total / examples.length);
 
     }
 
@@ -352,12 +351,12 @@ public class ANN {
 
         // Checks if ANN predicts right sign
         double total = 0;
-        for(Example example : examples) {
-            if (ann.predict(example.input)*example.output > 0) {
+        for (Example example : examples) {
+            if (ann.predict(example.input) * example.output > 0) {
                 total++;
             }
         }
-        return total/examples.length;
+        return total / examples.length;
 
     }
 

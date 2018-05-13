@@ -13,7 +13,7 @@ public class AsyncSearchAgent extends MCTSAgent {
     @Override
     public void registerAction(int ownScore, int opponentScore, int x, int y) {
         // stop async search
-        if(this.searchThread != null) {
+        if (this.searchThread != null) {
             this.asyncSearch.stop();
             try {
                 this.searchThread.join();
@@ -26,7 +26,7 @@ public class AsyncSearchAgent extends MCTSAgent {
         super.registerAction(ownScore, opponentScore, x, y);
 
         // start asyncsearch if next user is other user
-        if(this.rootNode.board.hasOptimalMoves() && this.rootNode.board.getCurrentPlayer() != this.player) {
+        if (this.rootNode.board.hasOptimalMoves() && this.rootNode.board.getCurrentPlayer() != this.player) {
             this.searchThread = new Thread(this.asyncSearch);
             this.searchThread.start();
         }
@@ -38,7 +38,7 @@ public class AsyncSearchAgent extends MCTSAgent {
         @Override
         public void run() {
             this.running = true;
-            while(this.running) {
+            while (this.running) {
                 search();
             }
         }
@@ -52,7 +52,7 @@ public class AsyncSearchAgent extends MCTSAgent {
             Node node = select();
 
             // Expansion
-            if(node.canExpand()) {
+            if (node.canExpand()) {
                 node = node.expand(rand);
             }
 

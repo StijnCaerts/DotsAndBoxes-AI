@@ -5,7 +5,10 @@ import MCTS.Strategy2.Agent2Factory;
 import MCTS.Strategy3.Agent3Factory;
 import board.Board;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -17,10 +20,11 @@ public class Simulator {
         int gamesAmount = 100;
         double timelimit = 0.5;
 
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));;
+        PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
+        ;
         String simulationStage;
 
-        for(int size = 6; size <= 7; size++) {
+        for (int size = 6; size <= 7; size++) {
             simulationStage = "Simulating Strategy1 vs Strategy2, size: " + Integer.toString(size);
             writer.println(simulationStage);
             writer.close();
@@ -77,7 +81,7 @@ public class Simulator {
         int mcts2Moves = 0;
         int mcts3Iterations = 0;
         int mcts3Moves = 0;
-        for(int game = 0; game < gamesAmount; game++) {
+        for (int game = 0; game < gamesAmount; game++) {
 
             // If game is even, agent1 starts the game
 
@@ -85,9 +89,9 @@ public class Simulator {
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
             int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
             Board board = new Board(columns, rows, false);
-            Agent[] agents = new Agent[] {
-                    factory1.create(game%2, timeLimit, rows, columns, Integer.toString(game)),
-                    factory2.create((game + 1)%2, timeLimit, rows, columns, Integer.toString(game))
+            Agent[] agents = new Agent[]{
+                    factory1.create(game % 2, timeLimit, rows, columns, Integer.toString(game)),
+                    factory2.create((game + 1) % 2, timeLimit, rows, columns, Integer.toString(game))
             };
 
             // Simulation
@@ -95,10 +99,10 @@ public class Simulator {
                 System.out.println("Simulating game " + game + " with " + columns + " columns and " + rows + " rows");
             }
             while (board.movesLeft > 0) {
-                int[] move = agents[(game + board.getCurrentPlayer())%2].getNextMove();
+                int[] move = agents[(game + board.getCurrentPlayer()) % 2].getNextMove();
                 board.registerMove(move);
-                for(int i = 0; i < 2; i++) {
-                    agents[i].registerAction(board.scores[(game + i)%2], board.scores[(game + i + 1)%2], move[0], move[1]);
+                for (int i = 0; i < 2; i++) {
+                    agents[i].registerAction(board.scores[(game + i) % 2], board.scores[(game + i + 1) % 2], move[0], move[1]);
                 }
             }
 
@@ -116,16 +120,16 @@ public class Simulator {
                 System.out.println("MCTS2:");
                 System.out.println("Iterations: " + mcts2.iterations);
                 System.out.println("Moves: " + mcts2.moves);
-                System.out.println("Average iterations/move: " + (double) mcts2.iterations/mcts2.moves);
-                System.out.println("Average time/iteration: " + timeLimit*mcts2.moves/mcts2.iterations);
+                System.out.println("Average iterations/move: " + (double) mcts2.iterations / mcts2.moves);
+                System.out.println("Average time/iteration: " + timeLimit * mcts2.moves / mcts2.iterations);
                 MCTS3.MCTSAgent mcts3 = (MCTS3.MCTSAgent) agents[1];
                 mcts3Iterations += mcts3.iterations;
                 mcts3Moves += mcts3.moves;
                 System.out.println("MCTS3:");
                 System.out.println("Iterations: " + mcts3.iterations);
                 System.out.println("Moves: " + mcts3.moves);
-                System.out.println("Average iterations/move: " + (double) mcts3.iterations/mcts3.moves);
-                System.out.println("Average time/iteration: " + timeLimit*mcts3.moves/mcts3.iterations);
+                System.out.println("Average iterations/move: " + (double) mcts3.iterations / mcts3.moves);
+                System.out.println("Average time/iteration: " + timeLimit * mcts3.moves / mcts3.iterations);
 
 
                 System.out.println(Arrays.toString(board.scores));
@@ -141,13 +145,13 @@ public class Simulator {
             System.out.println("MCTS2:");
             System.out.println("Iterations: " + mcts2Iterations);
             System.out.println("Moves: " + mcts2Moves);
-            System.out.println("Average iterations/move: " + (double) mcts2Iterations/mcts2Moves);
-            System.out.println("Average time/iteration: " + timeLimit*mcts2Moves/mcts2Iterations);
+            System.out.println("Average iterations/move: " + (double) mcts2Iterations / mcts2Moves);
+            System.out.println("Average time/iteration: " + timeLimit * mcts2Moves / mcts2Iterations);
             System.out.println("MCTS3:");
             System.out.println("Iterations: " + mcts3Iterations);
             System.out.println("Moves: " + mcts3Moves);
-            System.out.println("Average iterations/move: " + (double) mcts3Iterations/mcts3Moves);
-            System.out.println("Average time/iteration: " + timeLimit*mcts3Moves/mcts3Iterations);
+            System.out.println("Average iterations/move: " + (double) mcts3Iterations / mcts3Moves);
+            System.out.println("Average time/iteration: " + timeLimit * mcts3Moves / mcts3Iterations);
         }
 
         return res;

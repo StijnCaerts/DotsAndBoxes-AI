@@ -58,10 +58,10 @@ public class Node {
     }
 
     double getScore(double result, int player) {
-        if(result == 0.5) {
+        if (result == 0.5) {
             return result;
         }
-        if(player != (int) result) {
+        if (player != (int) result) {
             return 0.0;
         } else {
             return 1.0;
