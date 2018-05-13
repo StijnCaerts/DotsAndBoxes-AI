@@ -1,5 +1,7 @@
 from random import choice
 
+# Based on https://github.com/DieterBuys/mcts-player/
+
 class GameState(object):
 
     def __init__(self):

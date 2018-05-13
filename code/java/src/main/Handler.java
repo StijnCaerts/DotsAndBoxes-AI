@@ -3,17 +3,16 @@ package main;
 import MCTS.Strategy1.Agent1Factory;
 import MCTS.Strategy2.Agent2Factory;
 import MCTS.Strategy3.Agent3Factory;
-import MCTS2.AsyncSearchAgentFactory;
-import MCTS2.MCTSAgentFactory;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.martiansoftware.jsap.*;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
-import java.util.HashMap;
+import java.util.Iterator;
 
 public class Handler extends WebSocketServer {
 
@@ -22,10 +21,10 @@ public class Handler extends WebSocketServer {
     private static int strategy_number = -1;
 
     public static void main(String[] args) {
-        Handler.simpleMain();
+        Handler.JSAPMain(args);
     }
 
-    /*public static void JSAPMain(String args[]) throws JSAPException {
+    public static void JSAPMain(String args[]) {
 
         JSAP jsap = new JSAP();
 
@@ -48,7 +47,7 @@ public class Handler extends WebSocketServer {
                     "3: the latter extended with search tree reuse\n" +
                     "4: the latter extended with optimal moves\n" +
                     "5: the latter extended with increased search time\n" +
-                    "6: the latter extended with a neural network (default)"
+                    "6: strategy 4 extended with a neural network heuristic\n"
             );
             jsap.registerParameter(s);
 
@@ -91,7 +90,7 @@ public class Handler extends WebSocketServer {
         WebSocketServer server = new Handler(new InetSocketAddress("localhost", port));
         System.out.println("Starting server on ws://127.0.0.1:" + Integer.toString(port));
         server.run();
-    }*/
+    }
 
     public static void simpleMain() {
         // Please keep this one here, I can't get JSAP to work and just want to test agents sometimes :P
@@ -144,16 +143,19 @@ public class Handler extends WebSocketServer {
                     factory = new Agent3Factory();
                     break;
                 case 4:
-                    factory = new MCTSAgentFactory();
+                    factory = new MCTS2.MCTSAgentFactory();
                     break;
                 case 5:
-                    factory = new AsyncSearchAgentFactory();
+                    factory = new MCTS2.AsyncSearchAgentFactory();
+                    break;
+                case 6:
+                    factory = new MCTS3.MCTSAgentFactory();
                     break;
                 case 0:
                     factory = (int player1, double timeLimit1, int rows1, int columns1, String gameId1) -> new TestAgent(player1, timeLimit1, rows1, columns1, gameId1);
                     break;
                 default:
-                    factory = new MCTSAgentFactory();
+                    factory = new MCTS3.MCTSAgentFactory();
             }
             this.agent = factory.create(player, timeLimit, rows, columns, gameId);
 
@@ -194,6 +196,7 @@ public class Handler extends WebSocketServer {
     public void onError(WebSocket conn, Exception ex) {
         System.out.println("An error occurred on the connection.");
         System.out.println(ex.toString());
+        ex.printStackTrace();
     }
 
     @Override

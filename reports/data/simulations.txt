@@ -8,3 +8,22 @@ Simulating MCTS2 vs MCTS3, size: 5
 [25, 0, 25, 25, 0, 25]
 Simulating MCTS2 vs MCTS2Async, size: 5
 [30, 0, 20, 25, 0, 25]
+
+
+MCTS2 vs http://dotsandboxes.org/, size: 5
+[0, 0, 3, 0, 0, 3]
+
+MCTS3 vs http://dotsandboxes.org/, size: 5
+[0, 0, 3, 0, 0, 3]
+
+MCTS2 vs http://dotsgame.co/, size 4x5
+[2, 0, 4]
+
+MCTS3 vs http://dotsgame.co/, size 4x5
+[2, 0, 4]
+
+MCTS2 vs http://www.math.ucla.edu/~tom/Games/dots&boxes.html, size 5
+[1, 0, 5]
+
+MCTS3 vs http://www.math.ucla.edu/~tom/Games/dots&boxes.html, size 5
+[2, 0, 4]

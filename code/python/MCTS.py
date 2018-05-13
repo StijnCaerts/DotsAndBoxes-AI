@@ -5,8 +5,7 @@ from random import choice
 
 from GameState import GameState
 
-# https://github.com/DieterBuys/mcts-player/blob/master/game_controllers.py
-
+# Based on https://github.com/DieterBuys/mcts-player/
 
 class GameController(object):
     def get_next_move(self, state):
