@@ -1,6 +1,6 @@
 \subsection{Board representation}
 
-\subsubsection{Chains}
+\subsubsection{Chains\label{s:chains}}
 
 Chains are a basic concept in "Dots and boxes" strategy, so we decided to create a board representation which explicitly keeps track of these. We define the valence of a box as the amount of lines (edges) around it. We say two boxes are connected if they are adjacent and have no edge in between. We define a chain as a series of connected boxes with valence two or three. All boxes with valence 2 or 3 are part of exactly one chain, all other boxes are part of no chains. Each chain also has a type:
 \begin{itemize}
