@@ -2,7 +2,7 @@
 % Put games won/lost/tied as first/second player against other AIs here
 
 \subsection{Evaluation of own implementations}
-The different optimisations described in the previous section were implemented in an incremental fashion (except for the asynchronous search, which wasn't applied to the agent with the artificial neural network). This gives us the following list of agents that we could test:
+The different optimisations described in the previous section were implemented in an incremental fashion (except for the asynchronous search, which wasn't applied to the agent with the artificial neural network). This gives us the following list of agents that we can test:
 \begin{description}
 	\item[Agent 1] Monte Carlo tree search
 	\item[Agent 2] MCTS with early simulation termination
@@ -63,7 +63,7 @@ The impact of the reuse of the search tree is rather small, and not in the direc
 
 
 \subsubsection{Agent 3 vs Agent 4}
-Agent 4 can make use of the optimal moves it computes to handle chains better and this is immediately clear from the test results, as shown in Table \ref{result:Ag3vsAg4}. Agent 4 manages to win all games played against Agent 3.
+Agent 4 can make use of the optimal moves it computes to handle chains better and this is immediately clear from the test results, as shown in Table \ref{result:Ag3vsAg4}. Agent 4 manages to win all games played against Agent 3. This shows that having knowledge of chains in the Monte Carlo tree search is a very useful asset.
 
 \begin{table}[!h]
 	\centering
@@ -85,10 +85,12 @@ Agent 4 can make use of the optimal moves it computes to handle chains better an
 
 
 \subsubsection{Agent 4 vs Agent 5}
+Agent 5 is an extension of Agent 4 in the sense that it also searches the tree for good moves while the opponent is thinking. But because the branching factor of a typical game of ``Dots and Boxes'' is very large, searching before the opponent has made a move only makes sense when we can reduce the set of moves of which the other player is likely to select a move. This can be done by only considering the optimal moves that the opponent can make as a basis for this asynchronous search.
+
+In the results (Table \ref{result:Ag4vsAg5}), we see that the difference between Agent 4 and Agent 5 is not big. However, Agent 5 tends to perform worse in the tests we have conducted.
 
 \begin{table}[!h]
 	\centering
-	\label{result:Ag4vsAg5}
 	\begin{tabular}{c | c | c | c}
 		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 4 & Tie & Agent 5 \\ \hline
@@ -102,15 +104,15 @@ Agent 4 can make use of the optimal moves it computes to handle chains better an
 		Agent 4 & 28 & 0 & 22 \\ \hline
 		Agent 5 & 28 & 0 & 22
 	\end{tabular}
-	\caption{Agent 4 vs Agent 5}
+	\caption{\label{result:Ag4vsAg5}Agent 4 vs Agent 5}
 \end{table}
 
 
 \subsubsection{Agent 4 vs Agent 6}
+Agent 6 uses an artificial neural network as a heuristic in the Monte Carlo tree search. Agent 6 doesn't use asynchronous search, and thus is an extension of Agent 4. That's the reason we decided it would make more sense to evaluate this agent against the agent it is based on. In Table \ref{result:Ag4vsAg6}, the comparison of both agents is shown.
 
 \begin{table}[!h]
 	\centering
-	\label{result:Ag4vsAg6}
 	\begin{tabular}{c | c | c | c}
 		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 4 & Tie & Agent 6 \\ \hline
@@ -124,15 +126,25 @@ Agent 4 can make use of the optimal moves it computes to handle chains better an
 		Agent 4 & 26 & 0 & 24 \\ \hline
 		Agent 6 & 22 & 1 & 27
 	\end{tabular}
-	\caption{Agent 4 vs Agent 6}
+	\caption{\label{result:Ag4vsAg6}Agent 4 vs Agent 6}
 \end{table}
+
+From the test results, we can conclude that Agent 6 performs just as well as Agent 4. There are some slight deviations, in both sides, but these have no significant meaning.
 
 
 \subsection{Evaluation against other AI's}
-\subsubsection{dotsandboxes.org}
+To evaluate the performance of our agents, we let them compete to other AI's for the game of ``Dots and Boxes'' that are available online. We chose the following three websites to conduct our evaluation:
+\begin{itemize}
+	\item \url{http://dotsandboxes.org/}
+	\item \url{http://dotsgame.co/}
+	\item \url{http://www.math.ucla.edu/~tom/Games/dots&boxes.html}
+\end{itemize}
+
+We only evaluated our two best performing agents against the online AI's, namely Agent 4 and Agent 6.
+Because all moves had to be transferred by hand from the board from our agent to the board of the online agent, we limited the number of games per agent against a particular online AI to 6. This is not enough to give a conclusive result about the performance of our agents relative to the online AI's, but it was enough to show us some trends.
+
 \begin{table}[!h]
 	\centering
-	\label{result:dotsandboxesorg}
 	\begin{tabular}{c | c | c | c}
 		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 4 & Tie & Other AI \\ \hline
@@ -146,13 +158,12 @@ Agent 4 can make use of the optimal moves it computes to handle chains better an
 		Agent 6 & 0 & 0 & 3 \\ \hline
 		Other AI & 0 & 0 & 3
 	\end{tabular}
-	\caption{Playing against \url{http://dotsandboxes.org/}}
+	\caption{\label{result:dotsandboxesorg}Playing against \url{http://dotsandboxes.org/}}
 \end{table}
 
-\subsubsection{dotsgame.co}
+
 \begin{table}[!h]
 	\centering
-	\label{result:dotsgameco}
 	\begin{tabular}{c | c | c | c}
 		\textit{4x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 4 & Tie & Other AI \\ \hline
@@ -164,13 +175,12 @@ Agent 4 can make use of the optimal moves it computes to handle chains better an
 		\textbf{Playing first} & Agent 6 & Tie & Other AI \\ \hline
 		Agent 6 & 2 & 0 & 4
 	\end{tabular}
-	\caption{Playing against \url{http://dotsgame.co/}}
+	\caption{\label{result:dotsgameco}Playing against \url{http://dotsgame.co/}}
 \end{table}
 
-\subsubsection{math.ucla.edu/\textasciitilde tom/Games/dots\&boxes.html}
+
 \begin{table}[!h]
 	\centering
-	\label{result:uclaTom}
 	\begin{tabular}{c | c | c | c}
 		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 4 & Tie & Other AI \\ \hline
@@ -182,5 +192,7 @@ Agent 4 can make use of the optimal moves it computes to handle chains better an
 		\textbf{Playing first} & Agent 6 & Tie & Other AI \\ \hline
 		Agent 6 & 2 & 0 & 4
 	\end{tabular}
-	\caption{Playing against \url{http://www.math.ucla.edu/~tom/Games/dots&boxes.html}}
+	\caption{\label{result:uclaTom}Playing against \url{http://www.math.ucla.edu/~tom/Games/dots&boxes.html}}
 \end{table}
+
+In the results, shown in Tables \ref{result:dotsandboxesorg}, \ref{result:dotsgameco} and \ref{result:uclaTom}, it is clear that our agent lost the games most of the time. However, we still gained some valuable insights from this evaluation. First, we see that our agents are capable to recognize chains and play accordingly to these chains. But often, our agents fail to get a controlling position in the end game when the chains are played. Occasionally when we do have a controlling position, our agent makes and odd decision and loses control by playing a bad move.
