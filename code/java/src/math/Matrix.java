@@ -18,8 +18,8 @@ public class Matrix {
     public Matrix deepcopy() {
         // Returns a deep copy of this matrix
         double[][] newValues = new double[width][height];
-        for(int i = 0; i < width; i++) {
-            for(int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 newValues[i][j] = this.values[i][j];
             }
         }
@@ -30,9 +30,9 @@ public class Matrix {
         // Creates a matrix with given size with values taken from a normal distribution with the given parameters
         Random rand = new Random();
         double[][] values = new double[width][height];
-        for(int x = 0; x < width; x++) {
-            for(int y = 0; y < height; y++) {
-                values[x][y] = mu + rand.nextGaussian()*sigma;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                values[x][y] = mu + rand.nextGaussian() * sigma;
             }
         }
         return new Matrix(values);
@@ -41,8 +41,8 @@ public class Matrix {
     public double frobNorm() {
         // Calculates the Frobenius-norm of this matrix
         double res = 0;
-        for(int i = 0; i < this.width; i++) {
-            for(int j = 0; j < this.height; j++) {
+        for (int i = 0; i < this.width; i++) {
+            for (int j = 0; j < this.height; j++) {
                 res += Math.pow(this.values[i][j], 2);
             }
         }
@@ -52,8 +52,8 @@ public class Matrix {
     public Matrix add(Matrix other) {
         // Adds the given matrix to this matrix in-place
         // Matrices need to have equal size
-        for(int i = 0; i < this.width; i++) {
-            for(int j = 0; j < this.height; j++) {
+        for (int i = 0; i < this.width; i++) {
+            for (int j = 0; j < this.height; j++) {
                 this.values[i][j] += other.values[i][j];
             }
         }
@@ -62,8 +62,8 @@ public class Matrix {
 
     public Matrix multiply(double scalar) {
         // Multiplies this matrix with a scalar in-place
-        for(int i = 0; i < this.height; i++) {
-            for(int j = 0; j < this.height; j++) {
+        for (int i = 0; i < this.height; i++) {
+            for (int j = 0; j < this.height; j++) {
                 this.values[i][j] *= scalar;
             }
         }
@@ -77,9 +77,9 @@ public class Matrix {
         // Returns a new vector
 
         double[] res = new double[this.height];
-        for(int i = 0; i < this.height; i++) {
-            for(int j = 0; j < this.width; j++) {
-                res[i] +=  this.values[j][i]*vector.values[j];
+        for (int i = 0; i < this.height; i++) {
+            for (int j = 0; j < this.width; j++) {
+                res[i] += this.values[j][i] * vector.values[j];
             }
         }
         return new Vector(res);

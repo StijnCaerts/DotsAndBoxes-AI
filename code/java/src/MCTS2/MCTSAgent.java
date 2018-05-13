@@ -3,7 +3,10 @@ package MCTS2;
 import board.Board;
 import main.Agent;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Random;
 
 public class MCTSAgent extends Agent {
 
@@ -27,7 +30,7 @@ public class MCTSAgent extends Agent {
         int move = this.rootNode.board.edgeToInt(x, y);
         Optional<Node> optionalNode = this.rootNode.children.stream().filter(c -> c.move == move).findFirst();
         Node newRoot;
-        if(optionalNode.isPresent()) {
+        if (optionalNode.isPresent()) {
             // Found move already
             // remove references to free up resources
             newRoot = optionalNode.get();
@@ -47,13 +50,13 @@ public class MCTSAgent extends Agent {
     public int[] getNextMove() {
 
         long startTime = System.nanoTime();
-        while(System.nanoTime() < startTime + this.timeLimit*1000000000) {
+        while (System.nanoTime() < startTime + this.timeLimit * 1000000000) {
 
             // Selection
             Node node = select();
 
             // Expansion
-            if(node.canExpand()) {
+            if (node.canExpand()) {
                 node = node.expand(this.rand);
             }
 
@@ -81,7 +84,7 @@ public class MCTSAgent extends Agent {
     Node select() {
         Node node = this.rootNode;
 
-        while(!node.canExpand() && !node.children.isEmpty()) {
+        while (!node.canExpand() && !node.children.isEmpty()) {
             node = node.selectChildUCB();
         }
 
@@ -92,7 +95,7 @@ public class MCTSAgent extends Agent {
 
         Board boardCopy = board.deepcopy();
         int move = boardCopy.getNextAcceptableMove(this.rand);
-        while(move != 0 && !boardCopy.gameDecided()) {
+        while (move != 0 && !boardCopy.gameDecided()) {
             boardCopy.registerMove(move);
             move = boardCopy.getNextAcceptableMove(this.rand);
         }
@@ -101,7 +104,7 @@ public class MCTSAgent extends Agent {
     }
 
     void update(Node node, double result) {
-        while(node != null) {
+        while (node != null) {
             node.plays++;
             node.score += Node.getScore(result, this.player);
             node = node.parent;

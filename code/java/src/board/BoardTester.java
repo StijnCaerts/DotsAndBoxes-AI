@@ -6,7 +6,7 @@ public class BoardTester {
 
     public static void main(String[] args) {
 
-        BoardTester.verifyRandomGames(true,10000, 5, 10, 5, 10, 189486484);
+        BoardTester.verifyRandomGames(true, 10000, 5, 10, 5, 10, 189486484);
 
     }
 
@@ -28,7 +28,7 @@ public class BoardTester {
         int totalMoves = 0;
         int totalCopies = 0;
 
-        for(int game = 0; game < amount; game++) {
+        for (int game = 0; game < amount; game++) {
 
             // Initialization
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
@@ -37,12 +37,12 @@ public class BoardTester {
             if (verify && !BoardTester.verifyInvariants(board))
                 return false;
 
-            if (game%1000 == 0) {
+            if (game % 1000 == 0) {
                 System.out.println("Started simulating game " + game);
             }
 
             // Play random moves until none are left
-            while(board.movesLeft > 0) {
+            while (board.movesLeft > 0) {
 
                 // Select random move
                 int[] selectedEdgeCoords = board.getRandomLegalMove(rand);
@@ -55,23 +55,23 @@ public class BoardTester {
                     totalCopies++;
                     long start = System.nanoTime();
                     oldBoard = board.deepcopy();
-                    totalCopyTime += (System.nanoTime() - start)/1000000000.0;
+                    totalCopyTime += (System.nanoTime() - start) / 1000000000.0;
 
                     // Play move
                     totalMoves++;
                     start = System.nanoTime();
                     board.registerMove(selectedEdgeCoords[0], selectedEdgeCoords[1]);
-                    totalMoveRegistrationTime += (System.nanoTime() - start)/1000000000.0;
+                    totalMoveRegistrationTime += (System.nanoTime() - start) / 1000000000.0;
 
                     // Update optimal moves
                     start = System.nanoTime();
                     board.updateOptimalMoves();
-                    totalOptimalMovingUpdating += (System.nanoTime() - start)/1000000000.0;
+                    totalOptimalMovingUpdating += (System.nanoTime() - start) / 1000000000.0;
 
                     // Calculate heuristc input
                     start = System.nanoTime();
                     board.getHeuristicInput();
-                    totalHeuristicInputCalculationTime += (System.nanoTime() - start)/1000000000.0;
+                    totalHeuristicInputCalculationTime += (System.nanoTime() - start) / 1000000000.0;
 
                     // Verify
                     if (verify && !BoardTester.verifyInvariants(board))
@@ -99,12 +99,12 @@ public class BoardTester {
                         totalCopies++;
                         long start = System.nanoTime();
                         oldBoard = board.deepcopy();
-                        totalCopyTime += (System.nanoTime() - start)/1000000000.0;
+                        totalCopyTime += (System.nanoTime() - start) / 1000000000.0;
 
                         // Undo move
                         start = System.nanoTime();
                         board.undo();
-                        totalUndoTime += (System.nanoTime() - start)/1000000000.0;
+                        totalUndoTime += (System.nanoTime() - start) / 1000000000.0;
 
                         // Verify
                         if (verify && !BoardTester.verifyInvariants(board))
@@ -125,11 +125,11 @@ public class BoardTester {
         }
 
         System.out.println("Tested " + amount + " games with " + minColumns + "-" + maxColumns + " columns " + minRows + "-" + maxRows + " rows.");
-        System.out.println("Average board copy time: " + totalCopyTime/totalCopies);
-        System.out.println("Average undo time: " + totalUndoTime/totalMoves);
-        System.out.println("Average move registration time (including optimal move updating): " + totalMoveRegistrationTime/totalMoves);
-        System.out.println("Average optimal move updating time: " + totalOptimalMovingUpdating/totalMoves);
-        System.out.println("Average heuristic input calculation time: " + totalHeuristicInputCalculationTime/totalMoves);
+        System.out.println("Average board copy time: " + totalCopyTime / totalCopies);
+        System.out.println("Average undo time: " + totalUndoTime / totalMoves);
+        System.out.println("Average move registration time (including optimal move updating): " + totalMoveRegistrationTime / totalMoves);
+        System.out.println("Average optimal move updating time: " + totalOptimalMovingUpdating / totalMoves);
+        System.out.println("Average heuristic input calculation time: " + totalHeuristicInputCalculationTime / totalMoves);
         return true;
 
     }
@@ -143,10 +143,10 @@ public class BoardTester {
         // We assume edge matrix is correct and verify state from there
 
         // Verify valence matrix
-        for(int x = 0; x < board.columns; x++) {
-            for(int y = 0; y < board.rows; y++) {
+        for (int x = 0; x < board.columns; x++) {
+            for (int y = 0; y < board.rows; y++) {
                 int actualValence = 0;
-                for(int[] neighborDirection : Board.neighborDirections) {
+                for (int[] neighborDirection : Board.neighborDirections) {
                     int nx = x + neighborDirection[0];
                     int ny = y + neighborDirection[1];
                     if (board.edges[x + nx + 1][y + ny + 1])
@@ -163,8 +163,8 @@ public class BoardTester {
         // Check that box is part of chain iff valence is 2 or 3
         // Check that box which is part of chain according to chainAt matrix is also part of chain according to chain
         // Check that chain which box is part of according to chainAt matrix is also in the list of chains
-        for(int x = 0; x < board.columns; x++) {
-            for(int y = 0; y < board.rows; y++) {
+        for (int x = 0; x < board.columns; x++) {
+            for (int y = 0; y < board.rows; y++) {
                 Chain chain = board.chainAt[x][y];
                 boolean shouldBeInChain = (board.valence[x][y] == 2 || board.valence[x][y] == 3);
                 if (chain != null && !shouldBeInChain) {
@@ -199,7 +199,7 @@ public class BoardTester {
         // - LOOP: Check that first and last boxes have valence 2 and are adjacent and connected
         // - HALF_OPEN: Check that first box has valence 3 and last box has valence 2
         // - CLOSED: Check that first and last boxes have valence 3 and that chain size is larger than 1
-        for(Chain chain : board.chains) {
+        for (Chain chain : board.chains) {
 
             if (chain.size != chain.boxes.size()) {
                 System.out.println("Invariant violation: chain " + chain + " has stored size " + chain.size + " but actual size " + chain.boxes.size());
@@ -211,7 +211,7 @@ public class BoardTester {
                 return false;
             }
 
-            for(int i = 0; i < chain.size; i++) {
+            for (int i = 0; i < chain.size; i++) {
 
                 int[] boxCoords = board.intToBox(chain.boxes.get(i));
                 int x1 = boxCoords[0];
@@ -292,7 +292,7 @@ public class BoardTester {
             } else {
 
                 // Check if first and last boxes (if they have valence 2) are connected to at least one box without a chain
-                for(int i = 0; i < chain.size; i += chain.size - 1) {
+                for (int i = 0; i < chain.size; i += chain.size - 1) {
                     int[] boxCoords = board.intToBox(chain.boxes.get(i));
                     int x = boxCoords[0];
                     int y = boxCoords[1];

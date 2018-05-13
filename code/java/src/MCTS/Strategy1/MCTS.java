@@ -1,8 +1,9 @@
 package MCTS.Strategy1;
 
-import java.util.*;
 import MCTS.Board;
 import MCTS.Move;
+
+import java.util.*;
 
 // Based on https://github.com/DieterBuys/mcts-player
 public class MCTS {
@@ -12,7 +13,7 @@ public class MCTS {
     private Node select() {
         Node node = this.rootNode;
 
-        while(node.pendingMoves.isEmpty() && !node.children.isEmpty()) {
+        while (node.pendingMoves.isEmpty() && !node.children.isEmpty()) {
             node = node.selectChildUCB();
         }
 
@@ -20,7 +21,7 @@ public class MCTS {
     }
 
     private Node expand(Node node) {
-        assert(!node.pendingMoves.isEmpty());
+        assert (!node.pendingMoves.isEmpty());
 
         ArrayList<Move> moves = new ArrayList<>(node.pendingMoves);
         int i = new Random().nextInt(moves.size());
@@ -31,7 +32,7 @@ public class MCTS {
         Board b = board.duplicate();
 
         Move m = b.getRandomMove();
-        while(m != null) {
+        while (m != null) {
             b.playMove(m);
             m = b.getRandomMove();
         }
@@ -39,7 +40,7 @@ public class MCTS {
     }
 
     private void update(Node node, double result) {
-        while(node != null) {
+        while (node != null) {
             node.plays++;
             node.score += node.getScore(result, this.rootNode.board.getNextTurnPlayer());
             node = node.parent;
@@ -57,7 +58,7 @@ public class MCTS {
         // set this node as the new root node
         Optional<Node> optionalNode = this.rootNode.children.stream().filter(c -> c.move.equals(move)).findFirst();
         Node newRoot;
-        if(optionalNode.isPresent()) {
+        if (optionalNode.isPresent()) {
             newRoot = optionalNode.get();
             // remove references to free up resources
             newRoot.parent = null;
@@ -71,16 +72,16 @@ public class MCTS {
     }
 
     public Move getNextMove(double timeAllowed) {
-        if(timeAllowed < 0) {
+        if (timeAllowed < 0) {
             timeAllowed = 1.0;
         }
 
         int iterations = 0;
 
         long startTime = System.nanoTime();
-        while(System.nanoTime() < startTime + timeAllowed*1000000000) {
+        while (System.nanoTime() < startTime + timeAllowed * 1000000000) {
             Node node = this.select();
-            if(!node.pendingMoves.isEmpty()) {
+            if (!node.pendingMoves.isEmpty()) {
                 node = this.expand(node);
             }
 

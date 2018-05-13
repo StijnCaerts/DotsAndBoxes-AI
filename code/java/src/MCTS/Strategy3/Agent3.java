@@ -16,7 +16,7 @@ public class Agent3 extends Agent {
 
     @Override
     public void registerAction(int ownScore, int opponentScore, int x, int y) {
-        this.mcts.registerMove(new DBMove(x,y));
+        this.mcts.registerMove(new DBMove(x, y));
     }
 
     @Override

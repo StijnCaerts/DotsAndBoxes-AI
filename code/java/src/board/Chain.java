@@ -60,7 +60,7 @@ public class Chain {
 
     private void removeRange(int beginIndex, int endIndex) {
         // Removes all boxes in the indicated range from this chain (endIndex is exclusive)
-        for(int i = endIndex - 1; i >= beginIndex; i--) {
+        for (int i = endIndex - 1; i >= beginIndex; i--) {
             removeIndex(i);
         }
     }

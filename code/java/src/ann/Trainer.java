@@ -46,7 +46,7 @@ public class Trainer {
         Random rand = new Random(seed);
         double totalSolvingTime = 0;
 
-        for(int game = 0; game < gamesAmount; game++) {
+        for (int game = 0; game < gamesAmount; game++) {
 
             while (true) {
 
@@ -122,7 +122,7 @@ public class Trainer {
         }
 
         System.out.println("Finished solving " + gamesAmount + " games with " + minColumns + "-" + maxColumns + " columns, " + minRows + "-" + maxRows + " rows");
-        System.out.println("Average solve time: " + totalSolvingTime/gamesAmount);
+        System.out.println("Average solve time: " + totalSolvingTime / gamesAmount);
 
     }
 
@@ -138,7 +138,7 @@ public class Trainer {
             double timeLimit = 0.005;
 
             // Initialization
-            Agent[] agents = new Agent[] {
+            Agent[] agents = new Agent[]{
                     new MCTSAgent(0, timeLimit, rows, columns, ""),
                     new MCTSAgent(1, timeLimit, rows, columns, "")
             };
@@ -147,8 +147,8 @@ public class Trainer {
             while (board.movesLeft > 0 && board.state == BoardState.START) {
                 int[] move = agents[board.getCurrentPlayer()].getNextMove();
                 board.registerMove(move);
-                for(int i = 0; i < 2; i++) {
-                    agents[i].registerAction(board.scores[i%2], board.scores[(i + 1)%2], move[0], move[1]);
+                for (int i = 0; i < 2; i++) {
+                    agents[i].registerAction(board.scores[i % 2], board.scores[(i + 1) % 2], move[0], move[1]);
                 }
             }
 
@@ -175,7 +175,7 @@ public class Trainer {
             // Load games
             ArrayList<Example> examples = new ArrayList<>();
             Random rand = new Random();
-            while(bytesLeft > 0) {
+            while (bytesLeft > 0) {
 
                 // Load game data
                 int columns = buffer.getInt();
@@ -183,27 +183,27 @@ public class Trainer {
                 int currentPlayer = buffer.getInt();
                 int score0 = buffer.getInt();
                 int score1 = buffer.getInt();
-                bytesLeft -= 5*4;
+                bytesLeft -= 5 * 4;
 
                 // Load edges, bit by bit
                 Board board = new Board(columns, rows, false);
                 // Write edges, bit by bit
                 int x = 0;
                 int y = 1;
-                for(int i = 0; i < (int) Math.ceil((double) (2*columns*rows + columns + rows)/8); i++) {
+                for (int i = 0; i < (int) Math.ceil((double) (2 * columns * rows + columns + rows) / 8); i++) {
                     byte value = buffer.get();
                     bytesLeft -= 1;
-                    for(int bit = 0; bit < 8; bit++) {
+                    for (int bit = 0; bit < 8; bit++) {
                         // If edge is there, set bit to true
                         if (((value >> bit) & 1) == 1)
                             board.registerMove(x, y);
 
                         // Go to next edge
                         y += 2;
-                        if (y >= 2*rows + 1) {
+                        if (y >= 2 * rows + 1) {
                             x++;
-                            y = (x + 1)%2;
-                            if (x >= 2*columns + 1)
+                            y = (x + 1) % 2;
+                            if (x >= 2 * columns + 1)
                                 break;
                         }
                     }
@@ -264,10 +264,10 @@ public class Trainer {
         int ties = 0;
         int losses = 0;
         int chainParityHeuristicCorrect = 0;
-        for(Example example : examples) {
+        for (Example example : examples) {
             avg.add(example.input);
             outputAvg += example.output;
-            if (example.output*example.input.values[example.input.height - 1] > 0)
+            if (example.output * example.input.values[example.input.height - 1] > 0)
                 chainParityHeuristicCorrect++;
             if (example.output > CustomMath.epsilon) {
                 wins++;
@@ -277,12 +277,12 @@ public class Trainer {
                 ties++;
             }
         }
-        avg.multiply(1.0/examples.length);
+        avg.multiply(1.0 / examples.length);
         outputAvg /= examples.length;
         System.out.println("Average input: " + Arrays.toString(avg.values));
         System.out.println("Average output: " + outputAvg);
         System.out.println(wins + ", " + ties + ", " + losses);
-        System.out.println("Chain parity heuristic correctness: " + (double) chainParityHeuristicCorrect/examples.length);
+        System.out.println("Chain parity heuristic correctness: " + (double) chainParityHeuristicCorrect / examples.length);
 
     }
 
@@ -292,7 +292,7 @@ public class Trainer {
         // Guideline for hidden size comes from https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw
         int inputSize = (new Board(1, 1, false)).getHeuristicInput().height;
         int outputSize = 1;
-        ANN ann = new ANN(inputSize, (inputSize + outputSize)/2);
+        ANN ann = new ANN(inputSize, (inputSize + outputSize) / 2);
         ann.save(path);
 
     }
@@ -301,7 +301,7 @@ public class Trainer {
 
         // Training size indicates size of training set, rest of examples are used for validation
         ANN ann = ANN.load(annPath);
-        int trainingSize = (int) Math.round(trainingRatio*examples.length);
+        int trainingSize = (int) Math.round(trainingRatio * examples.length);
         Example[] trainingSet = Arrays.copyOfRange(examples, 0, trainingSize);
         Example[] validationSet = Arrays.copyOfRange(examples, trainingSize, examples.length);
         ann.train(trainingSet, validationSet, annBasePath, annPerformancePath);

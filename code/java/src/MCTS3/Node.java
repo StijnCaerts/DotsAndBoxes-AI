@@ -74,14 +74,14 @@ public class Node {
                         this.alreadyGeneratedOptimalMove = rand.nextInt(2);
                         move = this.board.getOptimalMoves()[this.alreadyGeneratedOptimalMove];
                     } else {
-                        move = this.board.getOptimalMoves()[(this.alreadyGeneratedOptimalMove + 1)%2];
+                        move = this.board.getOptimalMoves()[(this.alreadyGeneratedOptimalMove + 1) % 2];
                     }
                 }
             } else {
                 // Consider all legal moves
                 if (this.generator == null)
                     this.generator = new RandomMoveGenerator(this.board);
-                for(int i = 0; i < 100; i++) {
+                for (int i = 0; i < 100; i++) {
                     move = this.generator.getRandomLegalMoveAsInt(rand);
                     if (this.board.isBad(move)) {
                         this.generator.reverseMove(move);
@@ -105,10 +105,10 @@ public class Node {
     }
 
     static double getScore(double result, int player) {
-        if(result == 0.5) {
+        if (result == 0.5) {
             return result;
         }
-        if(player != (int) result) {
+        if (player != (int) result) {
             return 0.0;
         } else {
             return 1.0;

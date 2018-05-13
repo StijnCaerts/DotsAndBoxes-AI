@@ -1,6 +1,5 @@
 package MCTS.Strategy3;
 
-import MCTS.Strategy3.Agent3;
 import main.Agent;
 import main.AgentFactory;
 
