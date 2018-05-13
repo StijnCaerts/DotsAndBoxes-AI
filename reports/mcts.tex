@@ -19,8 +19,6 @@
 	We also did some small optimizations at this point, like decreasing the number of new (non-primitive) object creations, which led to a decrease in average time spent per iteration from $7.4*10^{-6}$s to $5.9*10^{-6}$s.
 	
 	\subsubsection{Optimal moves\label{s:optimalMoves}}
-	% TODO bespreking chains
-	
 	The use of optimal moves, which can be derived from the chains on the board, allows us to reduce the search space drastically. We no longer use totally random moves in the simulation of gameplay, but only use random optimal moves if these are present. Also in the expansion of a node in the search tree, we only consider optimal moves, which reduces the branching factor.
 	An important assumption at this point is that an opponent will play as an intelligent agent, and will not just play random moves. 
 	
@@ -29,3 +27,4 @@
 	In early game, MCTS still makes fairly random decisions and will sometimes decide to "open up" a chain (turn an open chain/loop into one or more half-open/closed chains), which simply seems to help the opponent. We added a heuristic which tries to avoid these moves at almost all costs.
 	
 	\subsubsection{Increased search time}
+	We can increase the search time by also continuing the search while the opponent has to make a move. To make this feasible, the branching factor can't be too high, because there would be too much uncertainty of which move the opponent would play. The branching factor can be reduced when we consider optimal moves, as described in Section \ref{s:optimalMoves}.
