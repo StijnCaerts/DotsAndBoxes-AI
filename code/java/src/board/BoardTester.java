@@ -6,7 +6,7 @@ public class BoardTester {
 
     public static void main(String[] args) {
 
-        BoardTester.verifyRandomGames(true, 10000, 5, 10, 5, 10, 189486484);
+        BoardTester.verifyRandomGames(true, 100000, 5, 10, 5, 10, 189486484);
 
     }
 
@@ -33,7 +33,7 @@ public class BoardTester {
             // Initialization
             int columns = rand.nextInt(maxColumns - minColumns + 1) + minColumns;
             int rows = rand.nextInt(maxRows - minRows + 1) + minRows;
-            Board board = new Board(columns, rows, false);
+            Board board = new Board(columns, rows, true);
             if (verify && !BoardTester.verifyInvariants(board))
                 return false;
 

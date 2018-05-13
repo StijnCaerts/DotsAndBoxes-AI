@@ -2,7 +2,7 @@
 
 \subsubsection{Chains}
 
-One of the most basic concepts in "Dots and boxes" strategy is the concept of chains, so we decided to create a board representation which explicitly keeps track of these. We define the valence of a box as the amount of lines (edges) around it. We say two boxes are connected if they are adjacent and have no edge in between. We define a chain as a series of connected boxes with valence two or three. All boxes with valence 2 or 3 are part of exactly one chain, all other boxes are part of no chains. Each chain also has a type:
+Chains are a basic concept in "Dots and boxes" strategy, so we decided to create a board representation which explicitly keeps track of these. We define the valence of a box as the amount of lines (edges) around it. We say two boxes are connected if they are adjacent and have no edge in between. We define a chain as a series of connected boxes with valence two or three. All boxes with valence 2 or 3 are part of exactly one chain, all other boxes are part of no chains. Each chain also has a type:
 \begin{itemize}
 \item Closed: starts and ends in a box of valence three.
 \item Half-open: starts with a box of valence three and ends with a box of valence two. \item Open: starts and ends with a box of valence two but doesn't connect back to itself.
@@ -26,10 +26,38 @@ Every move, our board updates several data structures:
 \item undoStack: a dynamic array which (if the board is recording undos) stores transactions which allow us to reverse every move.
 \end{itemize}
 
+Synchronizing all of these data structures is quite complex, so we also wrote some code which automatically plays random games until the end, reverses them until the beginning using undos and verifies a wide range of invariants (for further detail, we refer to the source code: board/BoardTester, lines 137-333). Our current implementation has been verified on over a million games ranging in size from 5x5 to 10x10.
+
 \subsubsection{Registering moves}
 
-\subsubsection{Undo}
+Most of the data structures can be kept up-to-date quite trivially. The main challenge is to update the chainAt-matrix and the list of chains dynamically (so without requiring a full re-calculation). This is done by just considering the boxes (one or two) whose valence increased (mostly) individually and applying an extensive case analysis to them (for further detail, we refer to the source code: board/Board, lines 567-1083). In the worst-case scenario here, we merge two chains by prepending the elements of one chain to the other, one by one. This technically has a fairly bad complexity of $\mathcal{O}(chainLength^2)$, which could be decreased by prepending the whole list at once, however since in practice chain lengths won't be very long (almost always under 20), we didn't consider this an important optimization.
+
+	Furthermore, since we don't update the optimal moves dynamically (we simply iterate through all chains), this part of move registration also has a theoretically bad complexity of $\mathcal{O}(chains)$. Technically the bound to the amount of chains is proportional to the area of the board, which is undesirable, however usually chains will have a moderate length and as such the board won't contain too many of them. Empirical measurements show us that optimal move updating takes up about 22\% of an average move registration (without recording undos), which seems acceptable to us.
+
+\subsubsection{Deepcopy and undo}
+
+For reversing moves, we support both deepcopying and undoing operations. The complexity of a deepcopy is trivial: $\mathcal{O}(columns*rows)$, which is the space complexity of the board representation. Needless to say, this is a lot of work and as such we also support undo functionality. For this, we record some basic information about the previous state of the board and the current move to be able to reverse it. The worst case here is the same as with registering moves: merging a chain by prepending, which leads to a complexity of $\mathcal{O}(chainLength^2)$. However, we measured our board representation's performance on 100000 games:
+\begin{itemize}
+\item Average move registration without recording undos: $2.8*10^{-7}$s
+\item Average deepcopy: $4.2*10^{-6}$s
+\item Average move registration with recording undos: $3.7*10^{-7}$s
+\item Average undo: $1.6*10^{-7}$s
+\end{itemize}
+We see that after around 17 moves, it's quicker to use a deepcopy than to record undos and undo all moves afterwards. Therefore, we decided to use the undo functionality for alpha-beta search, which needs to branch out on most levels, but not in the Monte Carlo tree search, which only considers one branch (of significant length) per iteration.
 
 \subsubsection{Legal move generation and iteration}
 
+Initially, we kept track of all legal moves left on the board using a hash-set, for constant-time removing and adding of moves. Iterating over this data structure can also be done in linear time (although with a higher constant factor than with a dynamic array), however we ran into trouble when we tried to modify the set and revert the set to its initial state while iterating over it (in alpha-beta search), which is unsupported by the Java HashSet. This made us try a different approach, where we use a sorted dynamic array (we keep it sorted to make sure it stays the same after doing and undoing moves). However, removing and adding elements to this data structure takes linear time on average. Finally, we came up with our own representation: we track the amount of moves left over the entire board and also per column (arbitrary choice, this could have been per row as well). This data structure is very simple to update, fairly simple to copy and can both generate a random move and iterate over all moves in $O(columns + rows)$ time (in the second case, worst-case per move). We compared the performance of these approaches on 100000 games:\\
+\\
+\begin{tabular}{l|l|l|l}
+Operation                          & Hash-set & Sorted dynamic array & Moves per column \\ \cline{1-4}
+Move registration (recording undo) & $4.9*10^{-7}$s         & $5.6*10^{-7}$s                     & $3.7*10^{-7}$s                 \\ \cline{1-4}
+Undo                               & $2.5*10^{-7}$s         & $3.2*10^{-7}$                     & $1.6*10^{-7}$s                 \\ \cline{1-4}
+Deepcopy                           & $1.1*10^{-5}$s         & $1.4*10^{-5}$s                     & $4.2*10^{-6}$s                 \\
+\end{tabular}\\
+\\
+Since the last approach empirically outperforms the others in terms of these operations and is theoretically faster for random move generation and easier to use for iteration than the hash-set, we stuck with this one.
+
 \subsubsection{Optimal moves}
+
+As discussed in the paper by Barker and Korf \cite{Barker:2012:SD:2900728.2900788}, it has been proven that in some board situations, certain moves are optimal. More specifically, whenever there is a half-open chain on the board with length larger than 2, it should always be filled up until it reaches length 2. At this point you have a choice: fill in the remaining two boxes and be forced to make a move elsewhere (lose control), or draw a line at the end of the chain, keeping control but sacrificing two boxes. In closed chains, a similar situation arises, but instead you have to choose in between sacrificing the last four boxes or keeping control. If there are multiple half-open or closed chains on the board, a player can safely fill in all but one (preferrably a half-open one, since sacrificing its end would only amount to two boxes). Our board representation calculates a set of such optimal moves (just one or two, we don't need to consider all options), which is useful both for MCTS and alpha-beta search.
