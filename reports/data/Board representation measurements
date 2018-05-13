@@ -99,3 +99,26 @@ Average undo time: 2.0002495128962494E-7
 Average move registration time (including optimal move updating): 4.4194184643744664E-7
 Average optimal move updating time: 7.211878288670664E-8
 Average heuristic input calculation time: 1.8379046330113262E-7
+
+
+
+
+
+Final undo vs deepcopy comparison:
+
+No undo:
+
+Tested 100000 games with 5-10 columns 5-10 rows.
+Average board copy time: 4.20544997058583E-6
+Average undo time: 0.0
+Average move registration time (including optimal move updating): 2.817744710284016E-7
+Average optimal move updating time: 6.228317582745012E-8
+Average heuristic input calculation time: 1.9892681714897032E-7
+
+With undo:
+Tested 100000 games with 5-10 columns 5-10 rows.
+Average board copy time: 4.1856532210115595E-6
+Average undo time: 1.550115439063568E-7
+Average move registration time (including optimal move updating): 3.654967215650312E-7
+Average optimal move updating time: 6.267802682791651E-8
+Average heuristic input calculation time: 2.033609650427777E-7
