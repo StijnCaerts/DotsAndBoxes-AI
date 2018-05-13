@@ -16,11 +16,10 @@ To measure the difference in performance between the optimisations we made, we m
 We repeated this experiment for board sizes of 5x5 and 6x6.
 
 \subsubsection{Agent 1 vs Agent 2}
-First, the basic Monte Carlo tree search implementation competed with the optimisation that has early termination of simulation. 100 games were played on a board size of 5x5, and another 100 games were played with a board size of 6x6.
+First, the basic Monte Carlo tree search implementation competed with the optimisation that has early termination of simulation. 100 games were played on a board size of 5x5, and another 100 games were played with a board size of 6x6. The results of these games are shown in Table \ref{result:Ag1vsAg2}.
 
 \begin{table}[!h]
 	\centering
-	\label{result:Ag1vsAg2}
 	\begin{tabular}{c | c | c | c}
 		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 1 & Tie & Agent 2 \\ \hline
@@ -34,15 +33,16 @@ First, the basic Monte Carlo tree search implementation competed with the optimi
 		Agent 1 & 19 & 0 & 31 \\ \hline
 		Agent 2 & 20 & 0 & 30
 	\end{tabular}
-	\caption{Agent 1 vs Agent 2}
+	\caption{\label{result:Ag1vsAg2}Agent 1 vs Agent 2}
 \end{table}
 
+As we can see in the results, Agent 2 is slightly better than Agent 1. This was more or less expected, as shorter simulations means that more simulations can be completed within the same time frame. Implementing the early termination of simulation was a good move, as more simulations leads eventually to better results.
 
 \subsubsection{Agent 2 vs Agent 3}
+We compare the agent with early termination of simulation and the agent with the extra feature of search tree reuse. The results of these simulations can be found in Table \ref{result:Ag2vsAg3}.
 
 \begin{table}[!h]
 	\centering
-	\label{result:Ag2vsAg3}
 	\begin{tabular}{c | c | c | c}
 		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 2 & Tie & Agent 3 \\ \hline
@@ -56,16 +56,17 @@ First, the basic Monte Carlo tree search implementation competed with the optimi
 		Agent 2 & 24 & 0 & 26 \\ \hline
 		Agent 3 & 20 & 0 & 30
 	\end{tabular}
-	\caption{Agent 2 vs Agent 3}
+	\caption{\label{result:Ag2vsAg3}Agent 2 vs Agent 3}
 \end{table}
 
+The impact of the reuse of the search tree is rather small, and not in the direction that we expected. The slightly worse results are possibly caused by the overhead of looking for the node that corresponds with the move that has been played, among the children of the root node in the search tree. The high branching factor isn't helping here either.
 
 
 \subsubsection{Agent 3 vs Agent 4}
+Agent 4 can make use of the optimal moves it computes to handle chains better and this is immediately clear from the test results, as shown in Table \ref{result:Ag3vsAg4}. Agent 4 manages to win all games played against Agent 3.
 
 \begin{table}[!h]
 	\centering
-	\label{result:Ag3vsAg4}
 	\begin{tabular}{c | c | c | c}
 		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
 		\textbf{Playing first} & Agent 3 & Tie & Agent 4 \\ \hline
@@ -79,7 +80,7 @@ First, the basic Monte Carlo tree search implementation competed with the optimi
 		Agent 3 & 0 & 0 & 50 \\ \hline
 		Agent 4 & 0 & 0 & 50
 	\end{tabular}
-	\caption{Agent 3 vs Agent 4}
+	\caption{\label{result:Ag3vsAg4}Agent 3 vs Agent 4}
 \end{table}
 
 
@@ -128,3 +129,58 @@ First, the basic Monte Carlo tree search implementation competed with the optimi
 
 
 \subsection{Evaluation against other AI's}
+\subsubsection{dotsandboxes.org}
+\begin{table}[!h]
+	\centering
+	\label{result:dotsandboxesorg}
+	\begin{tabular}{c | c | c | c}
+		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
+		\textbf{Playing first} & Agent 4 & Tie & Other AI \\ \hline
+		Agent 4 & 0 & 0 & 3 \\ \hline
+		Other AI & 0 & 0 & 3
+	\end{tabular}
+	\quad
+	\begin{tabular}{c | c | c | c}
+		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
+		\textbf{Playing first} & Agent 6 & Tie & Other AI \\ \hline
+		Agent 6 & 0 & 0 & 3 \\ \hline
+		Other AI & 0 & 0 & 3
+	\end{tabular}
+	\caption{Playing against \url{http://dotsandboxes.org/}}
+\end{table}
+
+\subsubsection{dotsgame.co}
+\begin{table}[!h]
+	\centering
+	\label{result:dotsgameco}
+	\begin{tabular}{c | c | c | c}
+		\textit{4x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
+		\textbf{Playing first} & Agent 4 & Tie & Other AI \\ \hline
+		Agent 4 & 2 & 0 & 4
+	\end{tabular}
+	\quad
+	\begin{tabular}{c | c | c | c}
+		\textit{4x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
+		\textbf{Playing first} & Agent 6 & Tie & Other AI \\ \hline
+		Agent 6 & 2 & 0 & 4
+	\end{tabular}
+	\caption{Playing against \url{http://dotsgame.co/}}
+\end{table}
+
+\subsubsection{math.ucla.edu/\textasciitilde tom/Games/dots\&boxes.html}
+\begin{table}[!h]
+	\centering
+	\label{result:uclaTom}
+	\begin{tabular}{c | c | c | c}
+		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
+		\textbf{Playing first} & Agent 4 & Tie & Other AI \\ \hline
+		Agent 4 & 1 & 0 & 5
+	\end{tabular}
+	\quad
+	\begin{tabular}{c | c | c | c}
+		\textit{5x5} & \multicolumn{3}{c}{\textbf{Winner}}        \\
+		\textbf{Playing first} & Agent 6 & Tie & Other AI \\ \hline
+		Agent 6 & 2 & 0 & 4
+	\end{tabular}
+	\caption{Playing against \url{http://www.math.ucla.edu/~tom/Games/dots&boxes.html}}
+\end{table}

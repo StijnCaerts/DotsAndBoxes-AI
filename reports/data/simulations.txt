@@ -21,6 +21,7 @@ Simulating MCTS2 vs MCTS2Async, size: 6
 
 
 MCTS2 vs http://dotsandboxes.org/, size: 5
+Format: Win-Tie-Lost (first for our agent playing first, then for other agent playing first)
 [0, 0, 3, 0, 0, 3]
 
 MCTS3 vs http://dotsandboxes.org/, size: 5
