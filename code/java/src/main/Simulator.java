@@ -20,8 +20,7 @@ public class Simulator {
         PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));;
         String simulationStage;
 
-        for(int size = 5; size <= 7; size++) {
-            /*
+        for(int size = 6; size <= 7; size++) {
             simulationStage = "Simulating Strategy1 vs Strategy2, size: " + Integer.toString(size);
             writer.println(simulationStage);
             writer.close();
@@ -45,7 +44,6 @@ public class Simulator {
             res = Simulator.simulate(new Agent3Factory(), new MCTS2.MCTSAgentFactory(), gamesAmount, timelimit, size, size, size, size, false);
             writer = new PrintWriter(new BufferedWriter(new FileWriter(filename, true)));
             writer.println(Arrays.toString(res));
-            */
 
             simulationStage = "Simulating MCTS2 vs MCTS3, size: " + Integer.toString(size);
             writer.println(simulationStage);

@@ -1,1 +1,5 @@
 Simulating MCTS2 vs MCTS3, size: 5
+[25, 0, 25, 25, 0, 25]
+Simulating MCTS2 vs MCTS2Async, size: 5
+[30, 0, 20, 25, 0, 25]
+Simulating MCTS2 vs MCTS3, size: 6

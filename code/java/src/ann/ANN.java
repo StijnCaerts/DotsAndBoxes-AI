@@ -3,11 +3,9 @@ package ann;
 import board.Board;
 import math.Matrix;
 import math.Vector;
+import sun.misc.IOUtils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -75,7 +73,6 @@ public class ANN {
 
         ANN ann = null;
         try {
-
             byte[] bytes = Files.readAllBytes(Paths.get(path));
             ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
             buffer.put(bytes);

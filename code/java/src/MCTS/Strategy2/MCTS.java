@@ -5,6 +5,7 @@ import MCTS.Move;
 
 import java.util.*;
 
+// Based on https://github.com/DieterBuys/mcts-player
 public class MCTS {
 
     private Node rootNode;
