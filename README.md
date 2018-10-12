@@ -1,5 +1,5 @@
 # Dots and Boxes AI
-AI agent for the game of Dots and Boxes made by Wouter Baert (@Wout12345) and Stijn Caerts (@StijnCaerts). This project was made as an assignment for the course [Machine Learning: Project](https://onderwijsaanbod.kuleuven.be/syllabi/e/H0T25AE.htm) at KU Leuven in 2018. Our implementation of the AI agent was the third best submission of the course.
+AI agent for the game of Dots and Boxes made by Wouter Baert ([@Wout12345](https://github.com/Wout12345)) and Stijn Caerts ([@StijnCaerts](https://github.com/StijnCaerts)). This project was made as an assignment for the course [Machine Learning: Project](https://onderwijsaanbod.kuleuven.be/syllabi/e/H0T25AE.htm) at KU Leuven in 2018. Our implementation of the AI agent was the third best submission of the course.
 
 ## How to use?
 * Clone the repo with `git clone --recurse-submodules` to load the submodule.
